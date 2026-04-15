@@ -76,8 +76,10 @@ app.get('/login', (_req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body || {};
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' });
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase().trim());
+  const rawIdentifier = (email || '').toString().toLowerCase().trim();
+  if (!rawIdentifier || !password) return res.status(400).json({ error: 'username and password required' });
+  // Accept either a full email or a plain username (email column stores whatever was seeded).
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(rawIdentifier);
   if (!user) return res.status(401).json({ error: 'invalid credentials' });
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) return res.status(401).json({ error: 'invalid credentials' });
@@ -284,6 +286,49 @@ app.post('/api/webhooks/trip-captured', (req, res) => {
     VALUES (?, ?, 'new', CURRENT_TIMESTAMP)
   `).run(tripId, `Dispatch ${customer_name} — pickup ${pickup} at ${start_time} to ${dropoff}${notes ? '. Notes: ' + notes : ''}`);
   res.status(201).json({ trip_id: tripId });
+});
+
+// ---------- owner-only reports ----------
+// Revenue, top customers, driver utilization — sensitive business numbers.
+app.get('/api/reports/summary', requireRole('owner'), (_req, res) => {
+  const trips = db.prepare(`SELECT customer_name, duration_min, state FROM trips`).all();
+  const byCustomer = {};
+  let totalTrips = 0, completed = 0;
+  trips.forEach(t => {
+    totalTrips++;
+    if (t.state === 'completed') completed++;
+    byCustomer[t.customer_name] = (byCustomer[t.customer_name] || 0) + 1;
+  });
+  const topCustomers = Object.entries(byCustomer)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, trips]) => ({ name, trips }));
+  res.json({
+    total_trips: totalTrips,
+    completed_trips: completed,
+    completion_rate: totalTrips ? completed / totalTrips : 0,
+    top_customers: topCustomers,
+  });
+});
+
+// Owner-only user management — create new users.
+app.get('/api/users', requireRole('owner'), (_req, res) => {
+  const rows = db.prepare('SELECT id, email, name, role, created_at FROM users ORDER BY created_at').all();
+  res.json(rows);
+});
+app.post('/api/users', requireRole('owner'), async (req, res) => {
+  const { email, name, password, role } = req.body || {};
+  if (!email || !name || !password || !role) return res.status(400).json({ error: 'email, name, password, role required' });
+  if (!['owner', 'operator', 'driver'].includes(role)) return res.status(400).json({ error: 'invalid role' });
+  const hash = await bcrypt.hash(password, 10);
+  try {
+    const info = db.prepare('INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)')
+      .run(email.toLowerCase().trim(), name, hash, role);
+    res.status(201).json({ id: info.lastInsertRowid });
+  } catch (e) {
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'email already exists' });
+    throw e;
+  }
 });
 
 // ---------- activity log ----------

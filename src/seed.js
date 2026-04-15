@@ -8,16 +8,26 @@ function seedIfEmpty() {
 
   console.log('[seed] Seeding demo data…');
 
-  const initialPw = process.env.DEFAULT_DEMO_PASSWORD || 'viba2026';
-  const hash = bcrypt.hashSync(initialPw, 10);
+  // Demo fallback password for driver accounts (kept simple for seeding).
+  const fallbackPw = process.env.DEFAULT_DEMO_PASSWORD || 'viba2026';
+  const fallbackHash = bcrypt.hashSync(fallbackPw, 10);
+
+  // Real accounts — passwords pulled from env vars if present, else inline.
+  const ownerPw = process.env.OWNER_PASSWORD || '1234567890';
+  const dispatchPw = process.env.DISPATCH_PASSWORD || 'MaribelDispatch';
+  const ownerHash = bcrypt.hashSync(ownerPw, 10);
+  const dispatchHash = bcrypt.hashSync(dispatchPw, 10);
 
   const insertUser = db.prepare(`
     INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)
   `);
-  insertUser.run('operator@viba.test', 'Maria Gonzalez', hash, 'operator');
-  insertUser.run('owner@viba.test', 'Viba Owner', hash, 'owner');
-  insertUser.run('driver1@viba.test', 'M. Ramirez', hash, 'driver');
-  insertUser.run('driver2@viba.test', 'J. Soto', hash, 'driver');
+  // Owner — full access
+  insertUser.run('rwallace', 'R. Wallace', ownerHash, 'owner');
+  // Dispatch operator — limited to dispatch operations
+  insertUser.run('maribel', 'Maribel', dispatchHash, 'operator');
+  // Drivers (demo)
+  insertUser.run('driver1@viba.test', 'M. Ramirez', fallbackHash, 'driver');
+  insertUser.run('driver2@viba.test', 'J. Soto', fallbackHash, 'driver');
 
   const insertDriver = db.prepare(`
     INSERT INTO drivers (name, van, zone, phone, available) VALUES (?, ?, ?, ?, 1)
@@ -66,7 +76,7 @@ function seedIfEmpty() {
   }
 
   console.log('[seed] Done.');
-  console.log(`[seed] Login with operator@viba.test / ${initialPw}`);
+  console.log(`[seed] Owner: rwallace   Dispatch operator: maribel`);
 }
 
 module.exports = { seedIfEmpty };

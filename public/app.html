@@ -717,13 +717,46 @@
     </div>
     <div class="op-info">
       <div>
-        <div class="op-name">Maria G.</div>
-        <div class="op-role">Central Operator</div>
+        <div class="op-name" id="uiUserName">—</div>
+        <div class="op-role" id="uiUserRole">—</div>
       </div>
-      <div class="op-avatar">MG</div>
+      <div class="op-avatar" id="uiUserInitials">—</div>
+      <button id="uiSignOut" title="Sign out" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--orange-light);padding:6px 12px;border-radius:6px;cursor:pointer;font:600 11px 'Inter',sans-serif;letter-spacing:1px;">SIGN OUT</button>
     </div>
   </div>
 </nav>
+
+<script>
+// Resolve current user and gate the UI before the rest of the app runs.
+(async function initUser() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
+    if (!r.ok) { window.location.href = '/login'; return; }
+    const me = await r.json();
+    window.__viba_user = me;
+    const name = me.name || me.email;
+    document.getElementById('uiUserName').textContent = name;
+    document.getElementById('uiUserRole').textContent = (me.role || '').toUpperCase();
+    const initials = (name || '?').split(/\s+/).map(p => p[0]).slice(0,2).join('').toUpperCase();
+    document.getElementById('uiUserInitials').textContent = initials || '?';
+
+    if (me.role !== 'owner') {
+      // Hide the Owner Dashboard tab for non-owners
+      document.querySelectorAll('.nav-tabs .tab').forEach(t => {
+        if (t.textContent.trim() === 'Owner Dashboard') t.style.display = 'none';
+      });
+      // Prevent direct navigation to it
+      const kpi = document.getElementById('view-kpi');
+      if (kpi) kpi.setAttribute('data-owner-only', 'true');
+    }
+  } catch (e) { window.location.href = '/login'; }
+})();
+
+document.getElementById('uiSignOut').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+  window.location.href = '/login';
+});
+</script>
 
 <!-- ============ LANDING ============ -->
 <section id="view-landing" class="view">
@@ -1140,8 +1173,15 @@
 <script>
 /* ========== NAV ========== */
 function showView(name, el) {
+  const target = document.getElementById('view-' + name);
+  if (!target) return;
+  // Gate owner-only views
+  if (target.getAttribute('data-owner-only') === 'true'
+      && (!window.__viba_user || window.__viba_user.role !== 'owner')) {
+    return;
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
+  target.classList.add('active');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (el && el.classList.contains('tab')) el.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'instant' });
