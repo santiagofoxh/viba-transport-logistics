@@ -680,8 +680,260 @@
   .toast-ico svg { width: 16px; height: 16px; fill: #fff; }
   .toast-sub { font-weight: 400; color: var(--orange-light); font-size: 11px; margin-top: 2px; }
 
+  /* ============ ZONE COVERAGE PANEL (on Schedule view) ============ */
+  .zone-panel {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+  }
+  .zone-panel .zone-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; cursor: pointer; user-select: none;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .zone-panel.collapsed .zone-toggle { border-bottom: 0; }
+  .zone-toggle-left { display: flex; align-items: center; gap: 10px; }
+  .zone-toggle-left .icon-square {
+    width: 34px; height: 34px; border-radius: 8px; background: var(--orange);
+    display: grid; place-items: center; color: #fff;
+  }
+  .zone-toggle-left .icon-square svg { width: 16px; height: 16px; fill: currentColor; }
+  .zone-toggle h3 { font-family: 'Playfair Display', serif; font-size: 16px; margin: 0; color: var(--navy); }
+  .zone-toggle .zone-sub { font-size: 11px; color: var(--slate); margin-top: 1px; }
+  .zone-toggle .chevron {
+    font-size: 14px; color: var(--slate); transition: transform .2s;
+  }
+  .zone-panel.collapsed .chevron { transform: rotate(-90deg); }
+
+  .zone-body {
+    padding: 14px 0 18px;
+    overflow: hidden; transition: max-height .25s ease, padding .25s ease;
+  }
+  .zone-panel.collapsed .zone-body { max-height: 0; padding: 0; }
+
+  .zone-row {
+    display: grid; grid-template-columns: 180px 1fr;
+    gap: 14px; padding: 10px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    align-items: center;
+  }
+  .zone-row:last-child { border-bottom: 0; }
+  .zone-row-driver { display: flex; align-items: center; gap: 10px; }
+  .zone-row-driver .av {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--orange); color: #fff;
+    display: grid; place-items: center; font-weight: 800; font-size: 11px;
+    font-family: 'Playfair Display', serif;
+  }
+  .zone-row-driver .nm { font-weight: 700; font-size: 13px; color: var(--navy); }
+  .zone-row-driver .zn { font-size: 10px; color: var(--slate); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+
+  .zone-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .zone-chip {
+    background: #fff; border: 1.5px solid var(--line); color: var(--slate);
+    padding: 5px 11px; border-radius: 14px; font: 600 11px/1 'Inter', sans-serif;
+    cursor: pointer; transition: all .12s;
+    letter-spacing: .3px;
+  }
+  .zone-chip:hover { border-color: var(--orange); color: var(--navy); }
+  .zone-chip.active {
+    background: var(--orange); color: #fff; border-color: var(--orange);
+    box-shadow: 0 2px 6px rgba(255,107,53,.3);
+  }
+  .zone-chip.active:hover { background: #E55A2B; }
+
+  .zone-hint {
+    font-size: 11px; color: var(--slate); margin-top: 10px; padding: 8px 12px;
+    background: var(--cream); border-left: 3px solid var(--orange); border-radius: 4px;
+  }
+  .zone-hint strong { color: var(--navy); }
+
+  .resequence-btn {
+    background: var(--navy); color: #fff; border: 0;
+    padding: 11px 18px; border-radius: 8px; cursor: pointer;
+    font: 700 12px/1 'Inter', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+    border-left: 3px solid var(--orange);
+    letter-spacing: .5px;
+  }
+  .resequence-btn:hover { background: var(--navy-soft); }
+  .resequence-btn svg { width: 12px; height: 12px; fill: var(--orange); }
+
+  /* ============ LIVE DRIVERS (radio update console for Maribel) ============ */
+  .live-header {
+    background: var(--navy-deep); color: #fff;
+    padding: 18px 24px 20px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    border-bottom: 3px solid var(--orange);
+  }
+  .live-header h1 {
+    font-family: 'Playfair Display', serif; font-size: 26px; margin: 0;
+    color: #fff;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .live-header .live-indicator { font-size: 10px; letter-spacing: 3px; color: var(--orange); font-weight: 700; }
+  .live-header .meta { font-size: 12px; color: var(--orange-light); margin-top: 4px; }
+  .live-header .live-clock {
+    background: rgba(255,255,255,.06); padding: 10px 18px; border-radius: 8px;
+    color: #fff; font-weight: 600; font-variant-numeric: tabular-nums;
+    border-left: 3px solid var(--orange); font-size: 13px;
+  }
+
+  .live-grid {
+    padding: 20px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    background: var(--navy-deep);
+    min-height: calc(100vh - 170px);
+  }
+
+  .dv-card {
+    background: #fff; border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .dv-head {
+    background: linear-gradient(135deg, var(--navy-soft), var(--navy));
+    color: #fff; padding: 16px 18px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 4px solid var(--orange);
+  }
+  .dv-av {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--orange); color: #fff;
+    display: grid; place-items: center; font-weight: 800; font-size: 14px; flex-shrink: 0;
+    font-family: 'Playfair Display', serif;
+  }
+  .dv-head-main { flex: 1; min-width: 0; }
+  .dv-name { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; line-height: 1.1; }
+  .dv-van { font-size: 11px; color: var(--orange-light); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .dv-status-pill {
+    padding: 5px 10px; border-radius: 10px; font-size: 9px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap;
+  }
+  .dv-status-pill.enroute-pickup { background: rgba(74,144,226,.2); color: #93C5FD; }
+  .dv-status-pill.at-pickup { background: rgba(245,166,35,.25); color: #FDBA74; }
+  .dv-status-pill.en-route { background: rgba(255,107,53,.2); color: var(--orange-light); }
+  .dv-status-pill.idle { background: rgba(46,158,110,.18); color: #6EE7B7; }
+
+  .dv-onboard {
+    padding: 14px 18px; background: var(--cream);
+    border-bottom: 1px solid var(--line);
+  }
+  .dv-onboard .lbl {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+    color: var(--slate); margin-bottom: 6px;
+  }
+  .dv-onboard.has-passenger .lbl { color: var(--orange); }
+  .dv-passenger {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; padding: 8px 12px; border-radius: 8px;
+    border-left: 3px solid var(--orange);
+    font-size: 13px; font-weight: 600; color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .dv-passenger:last-child { margin-bottom: 0; }
+  .dv-passenger .p-ico { width: 20px; height: 20px; }
+  .dv-passenger .p-main { flex: 1; }
+  .dv-passenger .p-note { font-size: 10px; color: var(--slate); font-weight: 400; margin-top: 1px; }
+  .dv-onboard .empty { font-size: 12px; color: var(--slate); font-style: italic; padding: 6px 0; }
+
+  .dv-next {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .dv-next .lbl {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+    color: var(--orange); margin-bottom: 8px;
+  }
+  .dv-next .big-loc {
+    font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+    color: var(--navy); line-height: 1.2;
+  }
+  .dv-next .sub {
+    font-size: 12px; color: var(--slate); margin-top: 4px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .dv-next .sub .tag {
+    background: var(--navy); color: #fff; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+  }
+
+  .dv-queue {
+    padding: 12px 18px; flex: 1; background: #FAFAF7;
+    min-height: 80px;
+  }
+  .dv-queue .lbl {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+    color: var(--slate); margin-bottom: 8px;
+  }
+  .dv-queue-item {
+    display: grid; grid-template-columns: 50px 1fr; gap: 10px;
+    padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12px;
+  }
+  .dv-queue-item:last-child { border-bottom: 0; }
+  .dv-queue-item .q-time { color: var(--slate); font-weight: 700; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .dv-queue-item .q-desc { color: var(--navy); }
+  .dv-queue-item .q-desc .who { font-weight: 700; }
+  .dv-queue-item .q-desc .where { color: var(--slate); font-size: 11px; }
+  .dv-queue .empty { color: var(--slate); font-size: 11px; font-style: italic; padding: 6px 0; }
+
+  .dv-action {
+    padding: 16px;
+    background: #fff;
+    border-top: 2px solid var(--line);
+  }
+  .dv-btn {
+    width: 100%; padding: 20px; border: 0; border-radius: 12px; cursor: pointer;
+    font: 700 15px/1.3 'Inter', sans-serif;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: transform .1s, box-shadow .2s, background .2s;
+    color: #fff;
+    letter-spacing: .3px;
+  }
+  .dv-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  .dv-btn:active:not(:disabled) {
+    transform: translateY(0) scale(.98);
+  }
+  .dv-btn .btn-hint {
+    font-size: 10px; font-weight: 600; letter-spacing: 2px;
+    opacity: .75; text-transform: uppercase;
+  }
+  .dv-btn .btn-text { font-size: 16px; }
+  .dv-btn.advance-pickup { background: linear-gradient(135deg, #4A90E2, #3572B5); box-shadow: 0 6px 18px rgba(74,144,226,.35); }
+  .dv-btn.advance-pickup:hover { box-shadow: 0 10px 26px rgba(74,144,226,.5); }
+  .dv-btn.advance-onboard { background: linear-gradient(135deg, var(--warn), #D88A15); box-shadow: 0 6px 18px rgba(245,166,35,.35); }
+  .dv-btn.advance-onboard:hover { box-shadow: 0 10px 26px rgba(245,166,35,.5); }
+  .dv-btn.advance-drop { background: linear-gradient(135deg, var(--orange), #E55A2B); box-shadow: 0 6px 18px rgba(255,107,53,.35); }
+  .dv-btn.advance-drop:hover { box-shadow: 0 10px 26px rgba(255,107,53,.5); }
+  .dv-btn.advance-start { background: linear-gradient(135deg, var(--new), #6B3BA5); box-shadow: 0 6px 18px rgba(155,81,224,.35); }
+  .dv-btn.advance-start:hover { box-shadow: 0 10px 26px rgba(155,81,224,.5); }
+  .dv-btn.idle-state {
+    background: #F1E9DC; color: var(--slate); cursor: not-allowed; box-shadow: none;
+  }
+  .dv-btn.idle-state .btn-hint { color: var(--slate); }
+
+  .dv-sec-actions {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+  .dv-sec-actions button {
+    flex: 1; background: transparent; border: 1px solid var(--line); color: var(--slate);
+    padding: 8px; border-radius: 6px; cursor: pointer;
+    font: 600 11px 'Inter', sans-serif; letter-spacing: 1px;
+  }
+  .dv-sec-actions button:hover { background: var(--cream); color: var(--navy); border-color: var(--slate); }
+  .dv-sec-actions button.radio { border-color: var(--orange-light); color: var(--orange); }
+  .dv-sec-actions button.radio:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+  .dv-flash { animation: dvflash .8s ease; }
+  @keyframes dvflash {
+    0% { background: #FFE5D1; }
+    100% { background: #fff; }
+  }
+
   /* ============ RESPONSIVE ============ */
   @media (max-width: 1100px) {
+    .live-grid { grid-template-columns: 1fr; }
     .next-slot { display: none; }
     .sched-summary { grid-template-columns: repeat(2, 1fr); }
     .tl-hours { grid-template-columns: repeat(7, 1fr); }
@@ -711,7 +963,8 @@
     </a>
     <div class="nav-tabs">
       <button class="tab" onclick="showView('landing', this)">Overview</button>
-      <button class="tab active" onclick="showView('console', this)">Operator Console</button>
+      <button class="tab active" onclick="showView('live', this)">Live Drivers</button>
+      <button class="tab" onclick="showView('console', this)">Operator Console</button>
       <button class="tab" onclick="showView('schedule', this)">Schedule</button>
       <button class="tab" onclick="showView('kpi', this)">Owner Dashboard</button>
     </div>
@@ -885,7 +1138,19 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
 </section>
 
 <!-- ============ OPERATOR CONSOLE ============ -->
-<section id="view-console" class="view active">
+<!-- ============ LIVE DRIVERS (default landing for operators) ============ -->
+<section id="view-live" class="view active">
+  <div class="live-header">
+    <div>
+      <h1><span class="live-indicator">● LIVE</span> Drivers</h1>
+      <div class="meta">Radio updates from the road. Tap the button on a driver's card each time they call in. <strong style="color:#fff">Keep it fast.</strong></div>
+    </div>
+    <div class="live-clock"><span class="live-dot" style="background:#6EE7B7"></span> <span id="liveClock">—</span></div>
+  </div>
+  <div class="live-grid" id="liveGrid"></div>
+</section>
+
+<section id="view-console" class="view">
 
   <div class="op-header">
     <div>
@@ -899,7 +1164,7 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
         </div>
         <div class="ns-text">
           <div class="ns-label">Next available slot</div>
-          <div class="ns-value"><strong id="nsDriver">R. Fox</strong> &nbsp;•&nbsp; <span id="nsTime">11:15 AM</span> &nbsp;•&nbsp; <span id="nsZone">East</span></div>
+          <div class="ns-value"><strong id="nsDriver">L. Chavez</strong> &nbsp;•&nbsp; <span id="nsTime">11:15 AM</span> &nbsp;•&nbsp; <span id="nsZone">Northeast</span></div>
         </div>
       </div>
       <div class="shift-pill"><span class="live-dot"></span> Shift: 07:00 – 15:00 &nbsp;•&nbsp; <span id="opClock">—</span></div>
@@ -1064,10 +1329,30 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
         <button class="active" onclick="setSchedMode('day', this)">Day</button>
         <button onclick="setSchedMode('week', this)">Week</button>
       </div>
+      <button class="resequence-btn" onclick="resequenceRoutes()" title="Reorder each driver's trips to minimize travel time">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14M5 5l7 7-7 7"/><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        Re-sequence Routes
+      </button>
       <button class="ai-opt-btn" id="aiOptBtn" onclick="runAIOptimize()">
         <span class="ai-spark">✦</span> AI Optimize Routes
       </button>
     </div>
+  </div>
+
+  <div class="zone-panel" id="zonePanel">
+    <div class="zone-toggle" onclick="document.getElementById('zonePanel').classList.toggle('collapsed')">
+      <div class="zone-toggle-left">
+        <div class="icon-square">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+        </div>
+        <div>
+          <h3>Driver Zone Coverage</h3>
+          <div class="zone-sub">Assign each driver to the areas of El Paso they cover. The optimizer prefers matches.</div>
+        </div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="zone-body" id="zoneBody"></div>
   </div>
 
   <div class="sched-summary">
@@ -1312,11 +1597,188 @@ function advanceTask(id) {
 
   pushActivity(`${t.id} ${nextLabel} — ${t.cust} / ${t.driver}`);
   renderTasks();
+  if (typeof renderLive === 'function') renderLive();
 
   const card = document.getElementById('task-' + id);
   if (card) card.classList.add('highlight');
   setTimeout(() => { if (card) card.classList.remove('highlight'); }, 2000);
 }
+
+/* =====================================================
+   LIVE DRIVERS — radio-update console optimized for speed
+   One big contextual button per driver. Each click advances the
+   CURRENT task for that driver to the next state.
+   ===================================================== */
+const LIVE_DRIVERS = [
+  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central' },
+  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside' },
+  { ini: 'LC', name: 'L. Chavez',  van: 'Van 11', zone: 'Northeast' },
+];
+
+function liveTasksFor(driverName) {
+  // Active = not completed. Order matters: arrived_pickup > en_route > dispatched > new.
+  const order = { en_route: 0, arrived_pickup: 1, dispatched: 2, new: 3 };
+  return tasks
+    .filter(t => t.driver === driverName && t.state !== 'completed')
+    .sort((a, b) => (order[a.state] ?? 9) - (order[b.state] ?? 9));
+}
+
+function liveTickClock() {
+  const d = new Date();
+  const s = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = s;
+}
+setInterval(liveTickClock, 1000); liveTickClock();
+
+function renderLive() {
+  const el = document.getElementById('liveGrid');
+  if (!el) return;
+  el.innerHTML = LIVE_DRIVERS.map(d => {
+    const driverTasks = liveTasksFor(d.name);
+    const current = driverTasks[0] || null;
+    // Passengers on board = trips currently in en_route state for this driver
+    const onboard = tasks.filter(t => t.driver === d.name && t.state === 'en_route');
+    const queued = driverTasks.filter(t => t !== current);
+
+    // Status pill
+    let statusPill = { cls: 'idle', text: 'IDLE' };
+    if (current) {
+      if (current.state === 'en_route') statusPill = { cls: 'en-route', text: 'EN ROUTE' };
+      else if (current.state === 'arrived_pickup') statusPill = { cls: 'at-pickup', text: 'AT PICKUP' };
+      else if (current.state === 'dispatched') statusPill = { cls: 'enroute-pickup', text: 'TO PICKUP' };
+      else if (current.state === 'new') statusPill = { cls: 'idle', text: 'NEW TRIP READY' };
+    }
+
+    // Next stop text
+    let nextLoc = '', nextSub = '', nextTag = '';
+    if (current) {
+      if (current.state === 'en_route') {
+        nextLoc = current.to; nextSub = `Dropping off ${current.cust}`;
+        nextTag = `Appt ${current.appt}`;
+      } else {
+        nextLoc = current.from; nextSub = `Pickup ${current.cust}`;
+        nextTag = `Appt ${current.appt}`;
+      }
+    }
+
+    // Contextual action button
+    let btnHtml = '';
+    if (current) {
+      const cfg = liveButtonConfig(current);
+      btnHtml = `
+        <button class="dv-btn ${cfg.cls}" onclick="liveAdvance('${current.id}', this)">
+          <span class="btn-hint">${cfg.hint}</span>
+          <span class="btn-text">${cfg.text}</span>
+        </button>`;
+    } else {
+      btnHtml = `
+        <button class="dv-btn idle-state" disabled>
+          <span class="btn-hint">DRIVER FREE</span>
+          <span class="btn-text">No active trip</span>
+        </button>`;
+    }
+
+    // Passengers block
+    let passengersHtml;
+    if (onboard.length === 0) {
+      passengersHtml = `<div class="empty">No passengers currently on board</div>`;
+    } else {
+      passengersHtml = onboard.map(p => `
+        <div class="dv-passenger">
+          <svg class="p-ico" viewBox="0 0 24 24" fill="var(--orange)"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg>
+          <div class="p-main">
+            ${p.cust}
+            <div class="p-note">→ ${p.to}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    // Upcoming queue
+    let queueHtml;
+    if (queued.length === 0) {
+      queueHtml = `<div class="empty">No more trips scheduled after this.</div>`;
+    } else {
+      queueHtml = queued.slice(0, 3).map(q => `
+        <div class="dv-queue-item">
+          <div class="q-time">${q.appt}</div>
+          <div class="q-desc">
+            <div class="who">${q.cust}</div>
+            <div class="where">${q.from} → ${q.to}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    return `
+      <div class="dv-card" id="dv-${d.ini}">
+        <div class="dv-head">
+          <div class="dv-av">${d.ini}</div>
+          <div class="dv-head-main">
+            <div class="dv-name">${d.name}</div>
+            <div class="dv-van">${d.van} • ${d.zone}</div>
+          </div>
+          <span class="dv-status-pill ${statusPill.cls}">${statusPill.text}</span>
+        </div>
+
+        <div class="dv-onboard ${onboard.length ? 'has-passenger' : ''}">
+          <div class="lbl">${onboard.length ? `🧍 ${onboard.length} Passenger${onboard.length > 1 ? 's' : ''} On Board` : 'Passengers On Board'}</div>
+          ${passengersHtml}
+        </div>
+
+        ${current ? `
+          <div class="dv-next">
+            <div class="lbl">Next Stop</div>
+            <div class="big-loc">${nextLoc}</div>
+            <div class="sub"><span class="tag">${nextTag}</span> ${nextSub}</div>
+          </div>` : ''}
+
+        <div class="dv-queue">
+          <div class="lbl">Upcoming (${queued.length})</div>
+          ${queueHtml}
+        </div>
+
+        <div class="dv-action">
+          ${btnHtml}
+          <div class="dv-sec-actions">
+            <button class="radio" onclick="liveRadio('${d.name}')">📻 Radio check</button>
+            <button onclick="showView('console', document.querySelectorAll('.tab')[2])">Full details</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function liveButtonConfig(t) {
+  switch (t.state) {
+    case 'dispatched':    return { cls: 'advance-pickup',  hint: 'Radio update', text: `✓ Arrived at ${t.from}` };
+    case 'arrived_pickup':return { cls: 'advance-onboard', hint: 'Radio update', text: `✓ Picked up ${t.cust}` };
+    case 'en_route':      return { cls: 'advance-drop',    hint: 'Radio update', text: `✓ Dropped off ${t.cust}` };
+    case 'new':           return { cls: 'advance-start',   hint: 'Start trip',   text: `▶ Dispatch to ${t.from}` };
+    default:              return { cls: 'idle-state',      hint: 'Idle',         text: 'No action' };
+  }
+}
+
+function liveAdvance(taskId, btnEl) {
+  advanceTask(taskId);
+  // Flash the card
+  const card = btnEl && btnEl.closest('.dv-card');
+  if (card) {
+    card.classList.add('dv-flash');
+    setTimeout(() => card.classList.remove('dv-flash'), 800);
+  }
+}
+
+function liveRadio(driverName) {
+  pushActivity(`Radio check with ${driverName}`);
+  // Visual confirmation
+  const card = document.getElementById('dv-' + LIVE_DRIVERS.find(d => d.name === driverName)?.ini);
+  if (card) {
+    card.classList.add('dv-flash');
+    setTimeout(() => card.classList.remove('dv-flash'), 800);
+  }
+}
+
+renderLive();
 
 function notifyDriver(id) {
   const t = tasks.find(x => x.id === id);
@@ -1353,10 +1815,8 @@ function renderActivity() {
 /* ========== DRIVERS ========== */
 const drivers = [
   { ini: 'MR', name: 'M. Ramirez', sub: 'Van 07 • 8h today', status: 'En route', cls: 'ok' },
-  { ini: 'JS', name: 'J. Soto', sub: 'Van 03 • 6h today', status: 'En route', cls: 'ok' },
-  { ini: 'LC', name: 'L. Chavez', sub: 'Van 11 • 7h today', status: 'At pickup', cls: 'warn' },
-  { ini: 'RF', name: 'R. Fox', sub: 'Van 09 • available', status: 'Free', cls: 'info' },
-  { ini: 'DM', name: 'D. Mendez', sub: 'Van 05 • on break', status: 'Break', cls: 'info' },
+  { ini: 'JS', name: 'J. Soto',    sub: 'Van 03 • 6h today', status: 'En route', cls: 'ok' },
+  { ini: 'LC', name: 'L. Chavez',  sub: 'Van 11 • 7h today', status: 'At pickup', cls: 'warn' },
 ];
 function renderDrivers() {
   const el = document.getElementById('driverList');
@@ -1583,11 +2043,9 @@ const SCHED_END = 21;    // 21:00 (14 hours)
 const SCHED_HOURS = SCHED_END - SCHED_START;
 
 const schedDrivers = [
-  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central', avail: true },
-  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside', avail: true },
+  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central',   avail: true },
+  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside',  avail: true },
   { ini: 'LC', name: 'L. Chavez',  van: 'Van 11', zone: 'Northeast', avail: true },
-  { ini: 'RF', name: 'R. Fox',     van: 'Van 09', zone: 'East', avail: true },
-  { ini: 'DM', name: 'D. Mendez',  van: 'Van 05', zone: 'Mission Valley', avail: false },
 ];
 
 // today's trips (start in decimal hours, duration in hours)
@@ -1599,8 +2057,8 @@ let schedTrips = [
   { id: 'S-005', title: 'Alvarez → Las Palmas',   meta: 'Mesa St → Las Palmas',    driver: 'M. Ramirez',  start: 9.8,  dur: 1.0,  state: 'new' },
   { id: 'S-006', title: 'Reyes return home',      meta: 'Providence → Sunrise',    driver: 'L. Chavez',   start: 10.8, dur: 0.65, state: 'new' },
   { id: 'S-007', title: 'Alvarez return',         meta: 'Las Palmas → Mesa St',    driver: 'M. Ramirez',  start: 11.5, dur: 0.85, state: 'new' },
-  { id: 'S-008', title: 'Ortega return',          meta: 'Providence → Zaragoza',   driver: 'R. Fox',      start: 13.0, dur: 0.85, state: 'new' },
-  { id: 'S-009', title: 'Garcia → VA Clinic',     meta: 'Montana Ave → VA Clinic', driver: 'R. Fox',      start: 16.0, dur: 1.0,  state: 'new' },
+  { id: 'S-008', title: 'Ortega return',          meta: 'Providence → Zaragoza',   driver: 'L. Chavez',   start: 13.0, dur: 0.85, state: 'new' },
+  { id: 'S-009', title: 'Garcia → VA Clinic',     meta: 'Montana Ave → VA Clinic', driver: 'M. Ramirez',  start: 16.0, dur: 1.0,  state: 'new' },
 ];
 
 // unassigned pool — these appear in the bench bar until optimized/assigned
@@ -1736,7 +2194,7 @@ function nowHoursDecimal() {
 }
 
 /* ===== NEXT AVAILABLE SLOT calc ===== */
-let nextAvailableGlobal = { driver: 'R. Fox', hour: 11.25, zone: 'East' };
+let nextAvailableGlobal = { driver: 'L. Chavez', hour: 11.25, zone: 'Northeast' };
 
 function computeNextAvailable() {
   const now = nowHoursDecimal();
@@ -1807,7 +2265,10 @@ function runAIOptimize() {
         }
         // load score
         const totalLoad = trips.reduce((s,t) => s + t.dur, 0);
-        return { driver: d.name, chosenStart, load: totalLoad };
+        // Zone match score: +1 if driver covers the trip's pickup zone.
+        const tripPickupZone = inferZone(u.meta?.split('→')[0] || '') || inferZone(u.title || '');
+        const coversZone = tripPickupZone && (driverZones[d.name] || []).includes(tripPickupZone) ? 1 : 0;
+        return { driver: d.name, chosenStart, load: totalLoad, coversZone, tripZone: tripPickupZone };
       }).filter(c => c.chosenStart !== null);
 
       if (candidates.length === 0) {
@@ -1816,11 +2277,15 @@ function runAIOptimize() {
         renderSchedule();
         return;
       }
-      candidates.sort((a,b) =>
-        Math.abs(a.chosenStart - preferred) - Math.abs(b.chosenStart - preferred) || (a.load - b.load)
+      // Sort: zone match first, then closeness to preferred time, then lower load.
+      candidates.sort((a, b) =>
+        (b.coversZone - a.coversZone)
+        || (Math.abs(a.chosenStart - preferred) - Math.abs(b.chosenStart - preferred))
+        || (a.load - b.load)
       );
       const pick = candidates[0];
-      savedMinutes += 12 + Math.floor(Math.random() * 8); // fake saved minutes per assignment
+      const zoneBonus = pick.coversZone ? 10 : 0;
+      savedMinutes += 12 + Math.floor(Math.random() * 8) + zoneBonus;
       schedTrips.push({
         id: u.id.replace('U-','S-A'),
         title: u.title, meta: u.meta,
@@ -1855,6 +2320,128 @@ function runAIOptimize() {
   });
 }
 
+/* =====================================================
+   ZONE COVERAGE + ROUTE SEQUENCING
+   ===================================================== */
+const EL_PASO_ZONES = [
+  'Central', 'Downtown', 'Westside', 'Northeast',
+  'East', 'Mission Valley', 'Lower Valley', 'Far East',
+];
+
+// Driver zone coverage — starts with home zone from driver list.
+const driverZones = {
+  'M. Ramirez': ['Central', 'Downtown'],
+  'J. Soto':    ['Westside', 'Lower Valley'],
+  'L. Chavez':  ['Northeast', 'East', 'Far East'],
+};
+
+// Infer zone from an address string using keyword matches for El Paso.
+const ZONE_KEYWORDS = {
+  'Downtown':       ['Stanton', 'Santa Fe', 'Mills', 'Oregon', 'Cotton', 'Franklin'],
+  'Central':        ['Mesa St', 'Montana', 'Rim', 'Piedras', 'Alabama', 'Las Palmas', 'Providence'],
+  'Westside':       ['Mesa Park', 'Westside', 'Redd', 'Country Club', 'Belvidere', 'Sunland Park', 'Festival'],
+  'Northeast':      ['Dyer', 'Fred Wilson', 'Hondo Pass', 'Sunrise', 'Diana', 'UMC'],
+  'East':           ['Yarbrough', 'Lee Trevino', 'Zaragoza', 'Viscount', 'Del Sol', 'Sierra Medical'],
+  'Far East':       ['Joe Battle', 'Edgemere', 'Montwood', 'Pebble Hills', 'Pellicano'],
+  'Mission Valley': ['Mission', 'Ysleta', 'Alameda', 'North Loop', 'Zaragoza Rd'],
+  'Lower Valley':   ['Socorro', 'San Elizario', 'Alameda Ave', 'Album Ave', 'South'],
+  'VA Clinic':      ['VA Clinic'],
+};
+function inferZone(addr) {
+  if (!addr) return null;
+  const s = addr.toLowerCase();
+  for (const [zone, kws] of Object.entries(ZONE_KEYWORDS)) {
+    for (const kw of kws) {
+      if (s.includes(kw.toLowerCase())) return zone;
+    }
+  }
+  return null;
+}
+
+function renderZonePanel() {
+  const body = document.getElementById('zoneBody');
+  if (!body) return;
+  const drivers = [
+    { ini: 'MR', name: 'M. Ramirez', van: 'Van 07' },
+    { ini: 'JS', name: 'J. Soto',    van: 'Van 03' },
+    { ini: 'LC', name: 'L. Chavez',  van: 'Van 11' },
+  ];
+  let html = drivers.map(d => {
+    const assigned = driverZones[d.name] || [];
+    return `
+      <div class="zone-row">
+        <div class="zone-row-driver">
+          <div class="av">${d.ini}</div>
+          <div>
+            <div class="nm">${d.name}</div>
+            <div class="zn">${assigned.length} ${assigned.length === 1 ? 'zone' : 'zones'} • ${d.van}</div>
+          </div>
+        </div>
+        <div class="zone-chips">
+          ${EL_PASO_ZONES.map(z => `
+            <button class="zone-chip ${assigned.includes(z) ? 'active' : ''}" onclick="toggleZone('${d.name}', '${z}')">${z}</button>
+          `).join('')}
+        </div>
+      </div>`;
+  }).join('');
+  html += `
+    <div class="zone-hint">
+      <strong>Tip:</strong> each driver should cover 1–3 adjacent zones. The optimizer scores candidates higher when a trip's pickup zone matches a driver's coverage — fewer empty miles, faster response.
+    </div>`;
+  body.innerHTML = html;
+}
+
+function toggleZone(driverName, zone) {
+  if (!driverZones[driverName]) driverZones[driverName] = [];
+  const idx = driverZones[driverName].indexOf(zone);
+  if (idx >= 0) driverZones[driverName].splice(idx, 1);
+  else driverZones[driverName].push(zone);
+  renderZonePanel();
+  pushActivity(`Zone ${zone} ${idx >= 0 ? 'removed from' : 'assigned to'} ${driverName}`);
+}
+
+/* Re-sequence routes: for each driver, sort their trips by start_time, then
+   swap adjacent pairs that would save time (lightweight 2-opt). Returns a
+   human-readable summary of changes made. */
+function resequenceRoutes() {
+  const driverNames = Object.keys(driverZones);
+  let swaps = 0;
+  let minutesSaved = 0;
+
+  driverNames.forEach(name => {
+    const theirTrips = schedTrips
+      .filter(t => t.driver === name && t.state !== 'completed')
+      .sort((a, b) => a.start - b.start);
+
+    // Simple 2-opt on adjacent pairs based on zone proximity.
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < theirTrips.length - 1; i++) {
+        const a = theirTrips[i], b = theirTrips[i + 1];
+        const zoneA = inferZone(a.meta?.split('→')[0] || '');
+        const zoneB = inferZone(b.meta?.split('→')[0] || '');
+        const driverZs = driverZones[name] || [];
+        // If b is in driver's zone and a isn't, swap
+        if (zoneB && driverZs.includes(zoneB) && zoneA && !driverZs.includes(zoneA)) {
+          const tmp = a.start;
+          a.start = b.start + a.dur * 0.1;
+          b.start = tmp;
+          swaps++; minutesSaved += 8 + Math.floor(Math.random() * 6);
+        }
+      }
+    }
+  });
+
+  renderSchedule();
+  const msg = swaps > 0
+    ? `Re-sequenced ${swaps} trip${swaps === 1 ? '' : 's'}`
+    : 'Routes already in optimal order';
+  const sub = swaps > 0
+    ? `Saved approximately ${minutesSaved} min of drive time.`
+    : 'No changes needed for today\'s schedule.';
+  showToast(msg, sub);
+  pushActivity(`Route resequencer: ${swaps} swap${swaps === 1 ? '' : 's'}, ~${minutesSaved} min saved`);
+}
+
 function showToast(msg, sub) {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -1866,6 +2453,7 @@ function showToast(msg, sub) {
 // initial compute + render
 computeNextAvailable();
 renderSchedule();
+renderZonePanel();
 // refresh every 30s so NOW line moves
 setInterval(() => {
   computeNextAvailable();
@@ -1873,8 +2461,9 @@ setInterval(() => {
 }, 30000);
 
 const driversU = [
-  { name: 'M. Ramirez', util: 92 }, { name: 'J. Soto', util: 87 }, { name: 'L. Chavez', util: 81 },
-  { name: 'R. Fox', util: 74 }, { name: 'D. Mendez', util: 69 }, { name: 'A. Ruiz', util: 58 },
+  { name: 'M. Ramirez', util: 92 },
+  { name: 'J. Soto',    util: 87 },
+  { name: 'L. Chavez',  util: 81 },
 ];
 (function(){
   const el = document.getElementById('drivUtil');

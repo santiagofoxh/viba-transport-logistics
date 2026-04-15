@@ -32,13 +32,10 @@ function seedIfEmpty() {
   const insertDriver = db.prepare(`
     INSERT INTO drivers (name, van, zone, phone, available) VALUES (?, ?, ?, ?, 1)
   `);
-  const dMR = insertDriver.run('M. Ramirez', 'Van 07', 'Central',        '915-555-0701').lastInsertRowid;
-  const dJS = insertDriver.run('J. Soto',    'Van 03', 'Westside',       '915-555-0703').lastInsertRowid;
-  const dLC = insertDriver.run('L. Chavez',  'Van 11', 'Northeast',      '915-555-0711').lastInsertRowid;
-  const dRF = insertDriver.run('R. Fox',     'Van 09', 'East',           '915-555-0709').lastInsertRowid;
-  const dDM = insertDriver.run('D. Mendez',  'Van 05', 'Mission Valley', '915-555-0705').lastInsertRowid;
-  // set D. Mendez unavailable (off today)
-  db.prepare('UPDATE drivers SET available = 0 WHERE id = ?').run(dDM);
+  // Viba Transport currently has 3 drivers on staff.
+  const dMR = insertDriver.run('M. Ramirez', 'Van 07', 'Central',   '915-555-0701').lastInsertRowid;
+  const dJS = insertDriver.run('J. Soto',    'Van 03', 'Westside',  '915-555-0703').lastInsertRowid;
+  const dLC = insertDriver.run('L. Chavez',  'Van 11', 'Northeast', '915-555-0711').lastInsertRowid;
 
   const today = new Date().toISOString().slice(0, 10);
   const t = (h, m) => `${today}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
@@ -55,8 +52,8 @@ function seedIfEmpty() {
   insertTrip.run('Mr. Herrera', '915-555-0203', 'Album Ave',       'UMC Dialysis',      t(9, 20), 55, '', dJS, 'dispatched');
   insertTrip.run('Mrs. Alvarez','915-555-0149', '4200 Mesa St',    'Las Palmas Medical',t(9, 50), 60, 'Wheelchair van', dMR, 'new');
   insertTrip.run('Mrs. Reyes',  '915-555-0317', 'Providence Clinic','Sunrise Senior',   t(10,45), 40, '', dLC, 'new');
-  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Providence Hosp.','Zaragoza',          t(13, 0), 50, '', dRF, 'new');
-  insertTrip.run('Mrs. Garcia', '915-555-0411', 'Montana Ave',     'VA Clinic El Paso', t(16, 0), 60, '', dRF, 'new');
+  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Providence Hosp.','Zaragoza',          t(13, 0), 50, '', dLC, 'new');
+  insertTrip.run('Mrs. Garcia', '915-555-0411', 'Montana Ave',     'VA Clinic El Paso', t(16, 0), 60, '', dMR, 'new');
 
   // unassigned (driver_id NULL) — candidates for AI optimize
   insertTrip.run('Mrs. Jimenez','915-555-0501', 'Cotton St',       'El Paso Cardiology', t(10,30), 45, '', null, 'new');
