@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Viba Transport Logistics — Operator Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A2540;
+    --navy-deep: #06192E;
+    --navy-soft: #132F4C;
+    --orange: #FF6B35;
+    --orange-light: #FFB088;
+    --cream: #FBF6EF;
+    --slate: #4A5B73;
+    --slate-soft: #8598B0;
+    --line: #E8DFD1;
+    --line-soft: #F0E8DA;
+    --white: #FFFFFF;
+    --ok: #2E9E6E;
+    --ok-soft: #D7F2E4;
+    --warn: #F5A623;
+    --warn-soft: #FDEFD4;
+    --info: #4A90E2;
+    --info-soft: #DBEAFB;
+    --danger: #D25B4B;
+    --muted: #9B9B9B;
+    --new: #9B51E0;
+    --new-soft: #EBDDF8;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--navy);
+    background: var(--cream);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ NAV ============ */
+  .topnav {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--navy-deep);
+    border-bottom: 2px solid var(--orange);
+  }
+  .topnav-inner {
+    max-width: 1440px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    box-shadow: 0 2px 8px rgba(255,107,53,.4);
+  }
+  .logo-mark svg { width: 20px; height: 20px; fill: #fff; }
+  .logo-text { color: #fff; line-height: 1; }
+  .logo-text .brand { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 800; }
+  .logo-text .sub { font-size: 9px; color: var(--orange-light); letter-spacing: 3px; text-transform: uppercase; margin-top: 3px; }
+
+  .nav-tabs { display: flex; gap: 4px; margin-left: auto; }
+  .tab {
+    background: none; border: 0; color: var(--orange-light);
+    padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    font: 500 13px/1 'Inter', sans-serif;
+    transition: all .15s;
+  }
+  .tab:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .tab.active { background: var(--orange); color: #fff; }
+
+  .op-info { display: flex; align-items: center; gap: 10px; margin-left: 16px; color: #fff; font-size: 12px; }
+  .op-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+  .op-info .op-name { color: #fff; font-weight: 600; }
+  .op-info .op-role { color: var(--orange-light); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ============ LAYOUT ============ */
+  .view { display: none; }
+  .view.active { display: block; }
+  .container { max-width: 1440px; margin: 0 auto; padding: 36px 24px; }
+
+  /* =============================================================
+     LANDING PAGE
+     ============================================================= */
+  .hero { background: var(--navy-deep); color: #fff; position: relative; overflow: hidden; }
+  .hero::before {
+    content: ''; position: absolute; top: 0; right: -80px; width: 280px; height: 280px;
+    background: var(--orange); transform: rotate(12deg); opacity: .9;
+  }
+  .hero::after {
+    content: ''; position: absolute; top: 260px; right: 0; width: 340px; height: 14px;
+    background: var(--orange); opacity: .8;
+  }
+  .hero-inner {
+    max-width: 1280px; margin: 0 auto; padding: 70px 28px 90px;
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center;
+  }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 6px; color: var(--orange); text-transform: uppercase; margin-bottom: 18px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 56px; line-height: 1.05; font-weight: 800; margin: 0 0 22px; }
+  .hero h1 em { color: var(--orange); font-style: normal; }
+  .hero p.lead { font-size: 17px; color: var(--cream); max-width: 540px; margin: 0 0 32px; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    padding: 13px 24px; border-radius: 8px; font: 600 14px/1 'Inter', sans-serif;
+    cursor: pointer; border: 0; text-decoration: none; display: inline-block;
+    transition: transform .1s, box-shadow .15s;
+  }
+  .btn-primary { background: var(--orange); color: #fff; box-shadow: 0 4px 14px rgba(255,107,53,.35); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,107,53,.5); }
+  .btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
+  .btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+  .hero-visual {
+    background: linear-gradient(135deg, var(--navy-soft), var(--navy));
+    border-radius: 14px; padding: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    border: 1px solid rgba(255,107,53,.2);
+  }
+  .mini-dash-title { color: var(--orange-light); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(46,158,110,.7); animation: pulse 1.6s infinite; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,158,110,.7);} 70% { box-shadow: 0 0 0 8px rgba(46,158,110,0);} 100% { box-shadow: 0 0 0 0 rgba(46,158,110,0);} }
+  .mini-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: rgba(255,255,255,.04); border-radius: 8px; margin-bottom: 7px; border-left: 3px solid var(--orange); }
+  .mini-row .id { color: var(--cream); font-weight: 600; font-size: 12px; }
+  .mini-row .where { color: var(--slate-soft); font-size: 11px; margin-top: 2px; }
+  .pill { font-size: 10px; padding: 4px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .pill.ok { background: rgba(46,158,110,.2); color: #6EE7B7; }
+  .pill.warn { background: rgba(245,166,35,.2); color: #FDBA74; }
+  .pill.info { background: rgba(74,144,226,.2); color: #93C5FD; }
+
+  .section-head { text-align: center; margin-bottom: 48px; }
+  .section-head .eyebrow { color: var(--orange); margin-bottom: 12px; }
+  .section-head h2 { font-family: 'Playfair Display', serif; font-size: 40px; margin: 0 0 12px; font-weight: 800; }
+  .section-head p { color: var(--slate); font-size: 16px; max-width: 640px; margin: 0 auto; }
+
+  .feat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .feat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 26px 22px; transition: transform .15s, box-shadow .15s; border-top: 4px solid var(--orange); }
+  .feat:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(10,37,64,.1); }
+  .feat-ico { width: 48px; height: 48px; border-radius: 12px; background: var(--orange); display: grid; place-items: center; margin-bottom: 16px; }
+  .feat-ico svg { width: 24px; height: 24px; fill: #fff; }
+  .feat h3 { font-family: 'Playfair Display', serif; margin: 0 0 8px; font-size: 19px; }
+  .feat p { color: var(--slate); font-size: 13px; margin: 0; }
+
+  .bg-navy { background: var(--navy-deep); color: #fff; }
+  .bg-navy .section-head h2 { color: #fff; }
+  .bg-navy .section-head p { color: var(--orange-light); }
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .price-card { background: var(--navy-soft); border-radius: 14px; padding: 32px 26px; border: 1px solid rgba(255,255,255,.1); position: relative; border-top: 4px solid var(--orange); }
+  .price-card.featured { background: #fff; color: var(--navy); transform: scale(1.04); box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .price-card .tier { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .price-card .fleet { font-size: 12px; color: var(--orange-light); margin-bottom: 16px; }
+  .price-card.featured .fleet { color: var(--slate); }
+  .price-card .amount { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--orange); font-weight: 800; }
+  .price-card .unit { font-size: 11px; color: var(--slate-soft); margin-top: 4px; }
+  .price-card.featured .unit { color: var(--slate); }
+  .price-card ul { list-style: none; padding: 22px 0 0; margin: 22px 0 0; border-top: 1px solid rgba(255,255,255,.1); }
+  .price-card.featured ul { border-color: var(--line); }
+  .price-card li { font-size: 13px; padding: 7px 0 7px 20px; position: relative; color: var(--cream); }
+  .price-card.featured li { color: var(--slate); }
+  .price-card li::before { content: ''; position: absolute; left: 0; top: 12px; width: 11px; height: 11px; border-radius: 50%; background: var(--orange); }
+  .price-card .badge { position: absolute; top: 18px; right: 18px; background: var(--orange); color: #fff; font-size: 10px; font-weight: 700; padding: 5px 10px; border-radius: 4px; letter-spacing: 1px; }
+
+  .footer-band { background: var(--navy-deep); color: #fff; padding: 50px 24px; border-top: 3px solid var(--orange); }
+  .footer-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 36px; }
+  .footer-inner h4 { font-family: 'Playfair Display', serif; font-size: 18px; margin: 0 0 12px; }
+  .footer-inner p, .footer-inner a { color: var(--cream); font-size: 13px; text-decoration: none; }
+  .footer-inner a:hover { color: var(--orange-light); }
+
+  /* =============================================================
+     OPERATOR CONSOLE — main layout
+     ============================================================= */
+  .op-header {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  }
+  .op-header h1 { font-family: 'Playfair Display', serif; font-size: 22px; margin: 0; }
+  .op-header .meta { color: var(--slate); font-size: 12px; margin-top: 2px; }
+  .op-header-right { display: flex; align-items: center; gap: 12px; }
+  .shift-pill {
+    background: var(--cream); border: 1px solid var(--line); color: var(--navy);
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .call-toggle {
+    background: var(--navy); color: #fff; border: 0; padding: 10px 18px; border-radius: 8px;
+    cursor: pointer; font: 600 13px/1 'Inter', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+    border-left: 3px solid var(--orange);
+    transition: background .15s;
+    position: relative;
+  }
+  .call-toggle:hover { background: var(--navy-soft); }
+  .call-toggle.active { background: var(--orange); border-left-color: #fff; }
+  .call-toggle .badge-n {
+    position: absolute; top: -5px; right: -5px;
+    background: var(--orange); color: #fff;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    font-size: 10px; font-weight: 700;
+    display: grid; place-items: center;
+    padding: 0 5px; border: 2px solid #fff;
+  }
+  .call-toggle.active .badge-n { background: #fff; color: var(--orange); border-color: var(--orange); }
+
+  /* KPI strip */
+  .op-strip {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    background: #fff; border-bottom: 1px solid var(--line);
+  }
+  .strip-kpi { padding: 14px 20px; border-right: 1px solid var(--line); }
+  .strip-kpi:last-child { border-right: 0; }
+  .strip-kpi .label { font-size: 10px; color: var(--slate); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+  .strip-kpi .value { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .strip-kpi .delta { font-size: 11px; color: var(--ok); margin-top: 2px; font-weight: 600; }
+
+  /* Console grid */
+  .console {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 0;
+    min-height: calc(100vh - 200px);
+    position: relative;
+  }
+
+  /* main task area */
+  .tasks-col { padding: 22px 24px; }
+  .col-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .col-head h2 { font-family: 'Playfair Display', serif; font-size: 20px; margin: 0; }
+  .col-head .count-badge { background: var(--navy); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; }
+  .filter-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-chip {
+    background: #fff; border: 1px solid var(--line); color: var(--slate);
+    padding: 5px 12px; border-radius: 14px; font-size: 11px; cursor: pointer; font-weight: 600;
+    transition: all .12s;
+  }
+  .filter-chip:hover { border-color: var(--orange); color: var(--navy); }
+  .filter-chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .filter-chip .c { color: var(--orange-light); margin-left: 4px; }
+  .filter-chip.active .c { color: var(--orange-light); }
+
+  /* Task card */
+  .task {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 10px;
+    border-left: 4px solid var(--orange);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .task:hover { box-shadow: 0 6px 18px rgba(10,37,64,.08); }
+  .task.state-new { border-left-color: var(--new); }
+  .task.state-dispatched { border-left-color: var(--info); }
+  .task.state-arrived_pickup { border-left-color: var(--warn); }
+  .task.state-en_route { border-left-color: var(--orange); }
+  .task.state-completed { border-left-color: var(--ok); opacity: .75; }
+  .task.highlight { animation: taskflash 2s; }
+  @keyframes taskflash { 0% { background: #FFF2E5; } 100% { background: #fff; } }
+
+  .task-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .task-title { font-weight: 600; color: var(--navy); font-size: 14px; line-height: 1.4; flex: 1; }
+  .task-title .task-id { font-family: 'Inter', monospace; color: var(--slate); font-weight: 700; font-size: 12px; margin-right: 8px; letter-spacing: .3px; }
+  .task-state { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 10px; border-radius: 10px; white-space: nowrap; }
+  .task.state-new .task-state { background: var(--new-soft); color: var(--new); }
+  .task.state-dispatched .task-state { background: var(--info-soft); color: var(--info); }
+  .task.state-arrived_pickup .task-state { background: var(--warn-soft); color: var(--warn); }
+  .task.state-en_route .task-state { background: rgba(255,107,53,.15); color: var(--orange); }
+  .task.state-completed .task-state { background: var(--ok-soft); color: var(--ok); }
+
+  .task-details { color: var(--slate); font-size: 12.5px; margin: 6px 0 10px; display: grid; grid-template-columns: repeat(3, auto); gap: 4px 18px; flex-wrap: wrap; }
+  .task-details .dt-label { color: var(--slate-soft); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+  .task-details .dt-value { font-weight: 600; color: var(--navy); }
+
+  .task-route {
+    background: var(--cream); border-radius: 6px; padding: 10px 14px; font-size: 13px; color: var(--navy);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .task-route .from, .task-route .to { flex: 1; }
+  .task-route .lbl { font-size: 9px; color: var(--slate); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+  .task-route .val { font-weight: 600; }
+  .task-route .arrow { color: var(--orange); font-size: 18px; }
+
+  .task-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .task-btn {
+    background: var(--orange); color: #fff; border: 0;
+    padding: 9px 16px; border-radius: 7px; cursor: pointer;
+    font: 600 12px/1 'Inter', sans-serif;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: transform .1s, background .15s;
+  }
+  .task-btn:hover { transform: translateY(-1px); background: #E55A2B; }
+  .task-btn.secondary { background: #fff; color: var(--navy); border: 1px solid var(--line); }
+  .task-btn.secondary:hover { background: var(--cream); border-color: var(--slate); }
+  .task-btn.ghost { background: transparent; color: var(--slate); border: 0; padding: 9px 10px; }
+  .task-btn.ghost:hover { color: var(--navy); background: var(--cream); }
+  .task-btn svg { width: 12px; height: 12px; fill: currentColor; }
+  .task-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  .task-log { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .task-log-item { font-size: 11px; color: var(--slate); padding: 3px 0; display: flex; gap: 10px; }
+  .task-log-item .log-time { color: var(--slate-soft); font-variant-numeric: tabular-nums; min-width: 48px; font-weight: 600; }
+  .task-log-item .log-by { color: var(--orange); font-weight: 600; }
+
+  .task-collapsed-log { cursor: pointer; color: var(--slate); font-size: 11px; margin-top: 8px; user-select: none; }
+  .task-collapsed-log:hover { color: var(--orange); }
+
+  .empty-state { text-align: center; color: var(--slate); padding: 40px 20px; font-size: 13px; background: #fff; border-radius: 10px; border: 1px dashed var(--line); }
+
+  /* Right-side secondary column */
+  .side-col {
+    background: #fff; border-left: 1px solid var(--line);
+    padding: 22px 20px;
+    overflow-y: auto;
+  }
+  .mini-panel + .mini-panel { margin-top: 22px; }
+  .mini-panel h3 { font-family: 'Playfair Display', serif; font-size: 15px; margin: 0 0 10px; display: flex; justify-content: space-between; align-items: center; }
+  .mini-panel h3 .count { background: var(--navy); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 700; }
+
+  .driver-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 12px; }
+  .driver-item:last-child { border: 0; }
+  .driver-av { width: 28px; height: 28px; border-radius: 50%; background: var(--orange); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 11px; flex-shrink: 0; }
+  .driver-av.offline { background: var(--slate-soft); }
+  .driver-main { flex: 1; min-width: 0; }
+  .driver-name { font-weight: 600; color: var(--navy); }
+  .driver-sub { color: var(--slate); font-size: 10px; margin-top: 1px; }
+  .driver-stat .pill { font-size: 9px; padding: 3px 8px; }
+
+  /* Map */
+  .map-mock {
+    background: var(--navy); position: relative; height: 200px; overflow: hidden;
+    border-radius: 8px;
+    background-image:
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
+      radial-gradient(circle at 30% 40%, rgba(255,107,53,.2), transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(74,144,226,.15), transparent 50%);
+    background-size: 22px 22px, 22px 22px, 100% 100%, 100% 100%;
+  }
+  .map-road { position: absolute; background: rgba(255,255,255,.14); }
+  .road-h { height: 2px; left: 0; right: 0; }
+  .road-v { width: 2px; top: 0; bottom: 0; }
+  .driver-dot {
+    position: absolute; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--orange); border: 2px solid #fff;
+    box-shadow: 0 0 0 0 rgba(255,107,53,.6); animation: pulseO 2s infinite;
+    cursor: pointer;
+  }
+  @keyframes pulseO {
+    0% { box-shadow: 0 0 0 0 rgba(255,107,53,.6); }
+    70% { box-shadow: 0 0 0 8px rgba(255,107,53,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+  }
+  .driver-dot.free { background: var(--ok); }
+  .driver-dot.free { animation: none; }
+
+  /* =============================================================
+     CALL PANEL — slide-out from right
+     ============================================================= */
+  .call-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 420px;
+    background: var(--navy-deep); color: #fff;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+    box-shadow: -10px 0 40px rgba(0,0,0,.25);
+    display: flex; flex-direction: column;
+    border-left: 3px solid var(--orange);
+  }
+  .call-panel.open { transform: translateX(0); }
+  .call-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.25);
+    opacity: 0; pointer-events: none; z-index: 99;
+    transition: opacity .25s;
+  }
+  .call-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .call-head {
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .call-head-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .call-close { background: none; border: 0; color: var(--orange-light); cursor: pointer; font-size: 22px; padding: 0; line-height: 1; }
+  .call-close:hover { color: #fff; }
+
+  .call-tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.15); }
+  .call-tab { flex: 1; background: none; border: 0; padding: 10px 6px; color: var(--slate-soft); cursor: pointer; font: 600 11px/1 'Inter', sans-serif; letter-spacing: 1px; text-transform: uppercase; position: relative; }
+  .call-tab:hover { color: #fff; }
+  .call-tab.active { color: #fff; }
+  .call-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 10%; right: 10%; height: 2px; background: var(--orange); }
+
+  .call-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+  /* Active call banner */
+  .active-call {
+    background: linear-gradient(135deg, var(--orange), #E55A2B);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .active-call:hover { filter: brightness(1.05); }
+  .ac-pic { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.2); display: grid; place-items: center; font-weight: 700; font-family: 'Playfair Display', serif; font-size: 16px; }
+  .ac-info { flex: 1; min-width: 0; }
+  .ac-name { font-weight: 700; font-size: 13px; }
+  .ac-meta { font-size: 10.5px; color: rgba(255,255,255,.85); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .ac-status { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,.18); padding: 4px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+
+  /* recent calls list */
+  .recent-head { font-size: 10px; color: var(--orange-light); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin: 4px 0 10px; }
+  .recent-call {
+    display: flex; align-items: center; gap: 10px; padding: 10px;
+    border-radius: 8px; cursor: pointer; background: rgba(255,255,255,.03);
+    margin-bottom: 6px; border-left: 2px solid transparent;
+    transition: background .12s, border-color .12s;
+  }
+  .recent-call:hover { background: rgba(255,255,255,.07); border-left-color: var(--orange); }
+  .recent-call.selected { background: rgba(255,107,53,.12); border-left-color: var(--orange); }
+  .rc-ico {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--navy-soft); display: grid; place-items: center; flex-shrink: 0;
+  }
+  .rc-ico svg { width: 14px; height: 14px; fill: var(--orange-light); }
+  .rc-main { flex: 1; min-width: 0; }
+  .rc-name { font-weight: 600; font-size: 12px; color: #fff; }
+  .rc-sub { font-size: 10px; color: var(--slate-soft); margin-top: 1px; }
+  .rc-time { font-size: 10px; color: var(--slate-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* transcript view */
+  .tr-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0 14px; margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .tr-pic { width: 42px; height: 42px; border-radius: 50%; background: var(--orange); display: grid; place-items: center; font-weight: 700; font-family: 'Playfair Display', serif; font-size: 16px; color: #fff; }
+  .tr-name { font-weight: 700; font-size: 13px; }
+  .tr-num { font-size: 11px; color: var(--orange-light); }
+
+  .tr-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; font-size: 11px; }
+  .tr-meta .kk { color: var(--slate-soft); text-transform: uppercase; font-size: 9px; letter-spacing: 1.5px; font-weight: 700; }
+  .tr-meta .vv { color: #fff; font-weight: 600; margin-top: 1px; }
+
+  .transcript-flow { font-size: 12.5px; }
+  .msg { margin-bottom: 10px; animation: fadein .3s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: translateY(0);} }
+  .msg .who { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; font-weight: 700; }
+  .msg.ai .who { color: var(--orange-light); }
+  .msg.caller .who { color: #9BE7FF; }
+  .msg .bubble { padding: 8px 12px; border-radius: 10px; line-height: 1.5; font-size: 12.5px; }
+  .msg.ai .bubble { background: rgba(255,107,53,.15); border-left: 2px solid var(--orange); color: var(--cream); }
+  .msg.caller .bubble { background: rgba(255,255,255,.05); color: #fff; }
+
+  .extracted {
+    margin-top: 16px; padding: 12px 14px; background: rgba(255,107,53,.08);
+    border-radius: 8px; border-left: 3px solid var(--orange);
+  }
+  .extracted h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-light); font-weight: 700; }
+  .ext-row { display: grid; grid-template-columns: 85px 1fr; gap: 8px; font-size: 11.5px; padding: 4px 0; }
+  .ext-row .k { color: var(--slate-soft); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .ext-row .v { color: #fff; font-weight: 600; }
+
+  .tr-actions { margin-top: 14px; display: flex; gap: 6px; }
+  .tr-actions button { flex: 1; padding: 9px; border-radius: 6px; border: 0; cursor: pointer; font: 600 11px/1 'Inter', sans-serif; }
+  .tr-actions .accept { background: var(--orange); color: #fff; }
+  .tr-actions .accept:hover { background: #E55A2B; }
+  .tr-actions .reject { background: transparent; color: var(--slate-soft); border: 1px solid rgba(255,255,255,.2); }
+  .tr-actions .reject:hover { color: #fff; border-color: #fff; }
+
+  /* Activity feed tab content */
+  .activity-item {
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.07);
+    font-size: 12px; display: flex; gap: 10px;
+  }
+  .activity-item:last-child { border: 0; }
+  .act-time { color: var(--orange-light); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 11px; min-width: 46px; }
+  .act-text { color: var(--cream); flex: 1; }
+  .act-text strong { color: #fff; }
+
+  /* ============ KPI VIEW ============ */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+  .kpi { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; border-top: 3px solid var(--orange); }
+  .kpi .label { font-size: 11px; color: var(--slate); letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+  .kpi .value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800; color: var(--navy); margin-top: 4px; }
+  .kpi .delta { font-size: 11px; color: var(--ok); margin-top: 4px; font-weight: 600; }
+
+  .panel { background: #fff; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; }
+  .panel-head { padding: 14px 18px; background: var(--navy); color: #fff; display: flex; justify-content: space-between; align-items: center; }
+  .panel-head h3 { font-family: 'Playfair Display', serif; margin: 0; font-size: 15px; }
+  .panel-head .pcount { font-size: 11px; color: var(--orange-light); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* ============ NEXT-AVAILABLE WIDGET ============ */
+  .next-slot {
+    background: linear-gradient(135deg, #FFF5EE, #FDEADA);
+    border: 1px solid var(--orange-light);
+    border-left: 4px solid var(--orange);
+    padding: 8px 14px 8px 12px; border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: transform .1s, box-shadow .15s;
+  }
+  .next-slot:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255,107,53,.25); }
+  .ns-ico { width: 30px; height: 30px; border-radius: 8px; background: var(--orange); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+  .ns-ico svg { width: 16px; height: 16px; }
+  .ns-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate); font-weight: 700; }
+  .ns-value { font-size: 12px; color: var(--navy); font-weight: 600; margin-top: 1px; }
+  .ns-value strong { color: var(--orange); font-weight: 700; }
+
+  /* ============ SCHEDULE VIEW ============ */
+  .sched-header {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+  }
+  .sched-header h1 { font-family: 'Playfair Display', serif; font-size: 22px; margin: 0; }
+  .sched-header .meta { color: var(--slate); font-size: 12px; margin-top: 2px; }
+
+  .date-nav { display: flex; align-items: center; gap: 8px; background: var(--cream); padding: 4px; border-radius: 8px; border: 1px solid var(--line); }
+  .date-nav button {
+    background: transparent; border: 0; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+    color: var(--navy); font-size: 14px; font-weight: 700; display: grid; place-items: center;
+  }
+  .date-nav button:hover { background: #fff; }
+  .date-nav .date-label { font-weight: 700; padding: 0 14px; color: var(--navy); font-size: 13px; }
+
+  .sched-toggle { display: flex; gap: 4px; background: var(--cream); padding: 4px; border-radius: 8px; border: 1px solid var(--line); }
+  .sched-toggle button { background: transparent; border: 0; padding: 7px 14px; border-radius: 6px; font: 600 12px/1 'Inter', sans-serif; cursor: pointer; color: var(--slate); }
+  .sched-toggle button.active { background: var(--navy); color: #fff; }
+
+  .ai-opt-btn {
+    background: linear-gradient(135deg, var(--orange), #E55A2B);
+    color: #fff; border: 0; padding: 11px 20px; border-radius: 8px;
+    cursor: pointer; font: 700 13px/1 'Inter', sans-serif;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(255,107,53,.35);
+    transition: transform .1s, box-shadow .15s;
+    position: relative;
+  }
+  .ai-opt-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,107,53,.5); }
+  .ai-opt-btn.running { pointer-events: none; }
+  .ai-opt-btn svg { width: 14px; height: 14px; fill: #fff; }
+  .ai-spark { animation: spark 1s infinite; display: inline-block; }
+  @keyframes spark { 0%, 100% { transform: rotate(0deg) scale(1);} 50% { transform: rotate(180deg) scale(1.2);} }
+
+  .sched-summary {
+    padding: 14px 24px; background: #fff; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+  }
+  .ssum { padding: 0 20px; border-right: 1px solid var(--line); }
+  .ssum:last-child { border: 0; }
+  .ssum .l { font-size: 10px; color: var(--slate); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+  .ssum .v { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; color: var(--navy); margin-top: 3px; }
+  .ssum.highlight .v { color: var(--orange); }
+
+  /* Unassigned bench */
+  .bench {
+    background: var(--warn-soft); border-bottom: 1px solid #F1D69D;
+    padding: 12px 24px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    min-height: 58px;
+  }
+  .bench-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+    color: #A76F11; display: flex; align-items: center; gap: 6px; margin-right: 8px;
+  }
+  .bench-label svg { width: 12px; height: 12px; fill: currentColor; }
+  .unassigned-trip {
+    background: #fff; border: 1px solid #F1D69D; border-left: 3px solid var(--warn);
+    border-radius: 6px; padding: 7px 12px; font-size: 12px; cursor: grab;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 180px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .unassigned-trip .ut-title { font-weight: 700; color: var(--navy); font-size: 12px; }
+  .unassigned-trip .ut-meta { font-size: 10.5px; color: var(--slate); }
+  .bench-empty { color: #A76F11; font-size: 12px; font-style: italic; padding: 6px 0; }
+
+  /* Timeline */
+  .timeline-wrap {
+    background: #fff; overflow: hidden;
+    padding: 0 0 24px;
+  }
+  .timeline-head {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    border-bottom: 1px solid var(--line);
+    background: var(--cream);
+    position: sticky; top: 0; z-index: 5;
+  }
+  .tl-corner { padding: 10px 16px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); border-right: 1px solid var(--line); }
+  .tl-hours { display: grid; grid-template-columns: repeat(14, 1fr); position: relative; }
+  .tl-hour {
+    border-right: 1px solid var(--line);
+    padding: 10px 6px; font-size: 11px; font-weight: 700; color: var(--navy);
+    text-align: center;
+  }
+  .tl-hour:last-child { border-right: 0; }
+  .tl-hour .sub { color: var(--slate); font-size: 9px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+
+  .tl-row {
+    display: grid; grid-template-columns: 180px 1fr;
+    border-bottom: 1px solid var(--line-soft);
+    min-height: 74px;
+    position: relative;
+  }
+  .tl-driver {
+    padding: 12px 16px; border-right: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px; background: #fff;
+  }
+  .tl-driver-av { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .tl-driver-av.offline { background: var(--slate-soft); }
+  .tl-driver-main { min-width: 0; flex: 1; }
+  .tl-driver-name { font-weight: 700; font-size: 13px; color: var(--navy); }
+  .tl-driver-sub { font-size: 10px; color: var(--slate); margin-top: 1px; }
+
+  .tl-track {
+    position: relative; background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/14 - 1px), var(--line-soft) calc(100%/14 - 1px), var(--line-soft) calc(100%/14));
+  }
+  .tl-trip {
+    position: absolute; top: 8px; bottom: 8px;
+    background: linear-gradient(135deg, var(--orange), #E55A2B);
+    color: #fff; border-radius: 6px; padding: 6px 10px;
+    font-size: 11px; font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255,107,53,.25);
+    overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .tl-trip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,.4); z-index: 3; }
+  .tl-trip.completed { background: linear-gradient(135deg, var(--ok), #1E7A53); box-shadow: 0 2px 8px rgba(46,158,110,.25); }
+  .tl-trip.dispatched { background: linear-gradient(135deg, var(--info), #3572B5); box-shadow: 0 2px 8px rgba(74,144,226,.25); }
+  .tl-trip.new { background: linear-gradient(135deg, var(--new), #6B3BA5); box-shadow: 0 2px 8px rgba(155,81,224,.25); }
+  .tl-trip .tt-title { font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-trip .tt-meta { font-size: 10px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .tl-trip.placing { animation: placein .7s cubic-bezier(.3,.8,.3,1); }
+  @keyframes placein { 0% { transform: translateY(-12px) scale(.85); opacity: 0;} 100% { transform: translateY(0) scale(1); opacity: 1;} }
+
+  .tl-gap {
+    position: absolute; top: 8px; bottom: 8px;
+    border: 1.5px dashed #D9D0C0; border-radius: 6px;
+    background: rgba(255,255,255,.4);
+    pointer-events: none;
+  }
+  .tl-gap.next-available {
+    border-color: var(--orange);
+    background: rgba(255,107,53,.08);
+    animation: nsPulse 2s infinite;
+  }
+  .tl-gap.next-available::after {
+    content: 'NEXT FREE'; position: absolute; top: 4px; left: 8px;
+    font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--orange);
+  }
+  @keyframes nsPulse { 0%,100% { border-color: var(--orange);} 50% { border-color: #FFC09B;} }
+
+  .nowline {
+    position: absolute; top: 0; bottom: 0; width: 2px; background: #D25B4B;
+    z-index: 2;
+  }
+  .nowline::before {
+    content: ''; position: absolute; top: -4px; left: -4px;
+    width: 10px; height: 10px; border-radius: 50%; background: #D25B4B;
+  }
+  .nowline::after {
+    content: 'NOW'; position: absolute; top: -14px; left: 6px;
+    font-size: 8px; font-weight: 800; color: #D25B4B; letter-spacing: 1px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--navy-deep); color: #fff; padding: 14px 22px; border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3); border-left: 4px solid var(--orange);
+    z-index: 200; opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600;
+    max-width: 480px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast-ico { width: 30px; height: 30px; border-radius: 50%; background: var(--orange); display: grid; place-items: center; flex-shrink: 0; }
+  .toast-ico svg { width: 16px; height: 16px; fill: #fff; }
+  .toast-sub { font-weight: 400; color: var(--orange-light); font-size: 11px; margin-top: 2px; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .next-slot { display: none; }
+    .sched-summary { grid-template-columns: repeat(2, 1fr); }
+    .tl-hours { grid-template-columns: repeat(7, 1fr); }
+    .tl-hour:nth-child(even) { display: none; }
+    .console { grid-template-columns: 1fr; }
+    .side-col { border-left: 0; border-top: 1px solid var(--line); }
+    .call-panel { width: 100%; }
+    .op-strip { grid-template-columns: repeat(3, 1fr); }
+    .strip-kpi:nth-child(4), .strip-kpi:nth-child(5) { border-top: 1px solid var(--line); }
+    .feat-grid { grid-template-columns: repeat(2, 1fr); }
+    .price-grid { grid-template-columns: 1fr; }
+    .price-card.featured { transform: none; }
+    .hero-inner { grid-template-columns: 1fr; padding: 50px 24px; }
+    .hero h1 { font-size: 40px; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a class="logo" onclick="showView('landing', this); return false;">
+      <span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M3 4h11v9H3zM14 8h4l3 3v2h-7zM6 17a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm12 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg></span>
+      <span class="logo-text"><div class="brand">Viba Transport</div><div class="sub">Logistics</div></span>
+    </a>
+    <div class="nav-tabs">
+      <button class="tab" onclick="showView('landing', this)">Overview</button>
+      <button class="tab active" onclick="showView('console', this)">Operator Console</button>
+      <button class="tab" onclick="showView('schedule', this)">Schedule</button>
+      <button class="tab" onclick="showView('kpi', this)">Owner Dashboard</button>
+    </div>
+    <div class="op-info">
+      <div>
+        <div class="op-name">Maria G.</div>
+        <div class="op-role">Central Operator</div>
+      </div>
+      <div class="op-avatar">MG</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ LANDING ============ -->
+<section id="view-landing" class="view">
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">Built for Viba Transportation • El Paso TX</div>
+        <h1>Never miss a <em>trip</em>. Never lose a <em>customer</em>.</h1>
+        <p class="lead">Viba Transport Logistics answers every call, turns it into a task on the central operator's screen, and tracks every driver from pickup to drop-off — in real time.</p>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="showView('console', document.querySelectorAll('.tab')[1])">Open operator console</button>
+          <button class="btn btn-ghost" onclick="showView('kpi', document.querySelectorAll('.tab')[2])">Owner dashboard</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="mini-dash-title"><span><span class="live-dot"></span>OPERATOR — MARIA G.</span><span id="heroClock">—</span></div>
+        <div class="mini-row"><div><div class="id">TASK #0421</div><div class="where">Dispatch Alvarez trip to Ramirez</div></div><span class="pill warn">New</span></div>
+        <div class="mini-row"><div><div class="id">TASK #0420</div><div class="where">Confirm pickup — Herrera / Soto</div></div><span class="pill info">In progress</span></div>
+        <div class="mini-row"><div><div class="id">TASK #0419</div><div class="where">Driver arrived — Reyes / Chavez</div></div><span class="pill ok">Done</span></div>
+        <div class="mini-row"><div><div class="id">CALL #0036</div><div class="where">Incoming — Mrs. Vargas</div></div><span class="pill warn">Live</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">the platform</div>
+      <h2>Four tools. One dispatch system.</h2>
+      <p>Everything a medical transport operation in El Paso needs to run cleanly — without the sticky notes.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.3 21 3 13.7 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"/></svg></div>
+        <h3>AI Answering Machine</h3>
+        <p>Picks up 24/7 in English or Spanish, captures the trip, and creates a task on the operator's screen.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M3 13h18v-2H3zm0 6h18v-2H3zm0-14v2h18V5z"/></svg></div>
+        <h3>Operator Task Queue</h3>
+        <p>Every action — assign, confirm pickup, mark en route, complete — is a clickable task. Nothing falls through.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg></div>
+        <h3>Live GPS & Routing</h3>
+        <p>Every driver on the map in real time. The system picks the closest driver and recalculates on traffic.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M3 13h2v8H3zm4-5h2v13H7zm4 8h2v5h-2zm4-12h2v17h-2zm4 6h2v11h-2z"/></svg></div>
+        <h3>Owner Dashboard</h3>
+        <p>Revenue, trips, top customers, driver hours — the numbers that tell you how the business is actually doing.</p>
+      </div>
+    </div>
+  </div>
+  <div class="bg-navy"><div class="container">
+    <div class="section-head">
+      <div class="eyebrow">investment</div>
+      <h2>Transparent pricing</h2>
+      <p>One-time onboarding plus a monthly subscription that scales with your fleet.</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="tier">Starter</div>
+        <div class="fleet">5 – 15 vehicles</div>
+        <div class="amount">$3,500 – $6,000</div>
+        <div class="unit">one-time onboarding</div>
+        <ul>
+          <li>Phone tree & AI call script</li>
+          <li>Driver & vehicle setup</li>
+          <li>GPS app install</li>
+          <li>Dispatcher + driver training</li>
+          <li>First-month support</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <span class="badge">RECOMMENDED</span>
+        <div class="tier">Growth</div>
+        <div class="fleet">15 – 40 vehicles</div>
+        <div class="amount">$6,000 – $10,000</div>
+        <div class="unit">one-time onboarding</div>
+        <ul>
+          <li>Everything in Starter</li>
+          <li>Bilingual EN/ES call flows</li>
+          <li>Custom rate rules & quoting</li>
+          <li>Owner KPI dashboard</li>
+          <li>Customer tracking links</li>
+          <li>Dedicated launch manager</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="tier">Enterprise</div>
+        <div class="fleet">40+ or multi-location</div>
+        <div class="amount">$10,000 – $15,000+</div>
+        <div class="unit">one-time onboarding</div>
+        <ul>
+          <li>Everything in Growth</li>
+          <li>Accounting / billing integration</li>
+          <li>Custom reporting</li>
+          <li>Advanced AI logic</li>
+          <li>On-site training in El Paso</li>
+        </ul>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top: 32px; color: var(--orange-light); font-size: 14px;">
+      Example monthly for a 20-vehicle fleet: <strong style="color:#fff">~$1,700 / month</strong> — roughly $85 per vehicle all-in.
+    </p>
+  </div></div>
+  <div class="footer-band"><div class="footer-inner">
+    <div>
+      <div class="logo" style="margin-bottom:14px;">
+        <span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M3 4h11v9H3zM14 8h4l3 3v2h-7zM6 17a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm12 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg></span>
+        <span class="logo-text"><div class="brand">Viba Transport</div><div class="sub">Logistics</div></span>
+      </div>
+      <p>The dispatch, GPS, and AI call platform built for Viba Transportation, El Paso TX.</p>
+    </div>
+    <div>
+      <h4>Explore the demo</h4>
+      <p><a onclick="showView('console', document.querySelectorAll('.tab')[1]); return false;">→ Operator console</a></p>
+      <p><a onclick="showView('kpi', document.querySelectorAll('.tab')[2]); return false;">→ Owner dashboard</a></p>
+    </div>
+    <div>
+      <h4>Next steps</h4>
+      <p>30-min walkthrough</p>
+      <p>5-driver pilot</p>
+      <p>Full rollout in 4–6 weeks</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ OPERATOR CONSOLE ============ -->
+<section id="view-console" class="view active">
+
+  <div class="op-header">
+    <div>
+      <h1>Operator Console</h1>
+      <div class="meta">Central dispatch for Viba Transportation • El Paso TX</div>
+    </div>
+    <div class="op-header-right">
+      <div class="next-slot" title="Next open slot for walk-in / call-in bookings" onclick="showView('schedule', document.querySelectorAll('.tab')[2])">
+        <div class="ns-ico">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13z"/></svg>
+        </div>
+        <div class="ns-text">
+          <div class="ns-label">Next available slot</div>
+          <div class="ns-value"><strong id="nsDriver">R. Fox</strong> &nbsp;•&nbsp; <span id="nsTime">11:15 AM</span> &nbsp;•&nbsp; <span id="nsZone">East</span></div>
+        </div>
+      </div>
+      <div class="shift-pill"><span class="live-dot"></span> Shift: 07:00 – 15:00 &nbsp;•&nbsp; <span id="opClock">—</span></div>
+      <button class="call-toggle" id="callToggle" onclick="toggleCall()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.3 21 3 13.7 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"/></svg>
+        Call Activity
+        <span class="badge-n" id="callBadge">1</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="op-strip">
+    <div class="strip-kpi"><div class="label">Tasks Open</div><div class="value" id="sTasksOpen">6</div><div class="delta">2 new this hour</div></div>
+    <div class="strip-kpi"><div class="label">Trips Today</div><div class="value" id="sTrips">42</div><div class="delta">+8 vs yesterday</div></div>
+    <div class="strip-kpi"><div class="label">Drivers Active</div><div class="value">9 / 12</div><div class="delta">3 on break</div></div>
+    <div class="strip-kpi"><div class="label">On-time Rate</div><div class="value">97%</div><div class="delta">+2 pts this week</div></div>
+    <div class="strip-kpi"><div class="label">Calls — today</div><div class="value" id="sCalls">36</div><div class="delta">100% answered</div></div>
+  </div>
+
+  <div class="console">
+
+    <!-- TASK QUEUE -->
+    <div class="tasks-col">
+      <div class="col-head">
+        <h2>Task Queue <span class="count-badge" id="queueCount">6 open</span></h2>
+        <div style="color: var(--slate); font-size: 12px;">Click a task to advance it</div>
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="setFilter(this, 'all')">All <span class="c" id="fAll">0</span></button>
+        <button class="filter-chip" onclick="setFilter(this, 'new')">New <span class="c" id="fNew">0</span></button>
+        <button class="filter-chip" onclick="setFilter(this, 'dispatched')">Dispatched <span class="c" id="fDispatched">0</span></button>
+        <button class="filter-chip" onclick="setFilter(this, 'arrived_pickup')">At pickup <span class="c" id="fArrived">0</span></button>
+        <button class="filter-chip" onclick="setFilter(this, 'en_route')">En route <span class="c" id="fEnroute">0</span></button>
+        <button class="filter-chip" onclick="setFilter(this, 'completed')">Completed <span class="c" id="fDone">0</span></button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- RIGHT CONTEXT COLUMN (driver roster + map) -->
+    <aside class="side-col">
+      <div class="mini-panel">
+        <h3>Live Driver Map <span class="count">El Paso</span></h3>
+        <div class="map-mock">
+          <div class="map-road road-h" style="top:22%"></div>
+          <div class="map-road road-h" style="top:58%"></div>
+          <div class="map-road road-h" style="top:82%"></div>
+          <div class="map-road road-v" style="left:28%"></div>
+          <div class="map-road road-v" style="left:62%"></div>
+          <div class="map-road road-v" style="left:82%"></div>
+          <div class="driver-dot" style="left:30%; top:25%"></div>
+          <div class="driver-dot" style="left:62%; top:58%"></div>
+          <div class="driver-dot" style="left:45%; top:78%"></div>
+          <div class="driver-dot free" style="left:82%; top:30%"></div>
+        </div>
+      </div>
+
+      <div class="mini-panel">
+        <h3>Drivers on Duty <span class="count">9</span></h3>
+        <div id="driverList"></div>
+      </div>
+
+      <div class="mini-panel">
+        <h3>Activity Feed <span class="count" id="actCount">0</span></h3>
+        <div id="activityFeed" style="font-size: 11px; color: var(--slate); max-height: 240px; overflow-y: auto;"></div>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<!-- ============ CALL PANEL (slide-out) ============ -->
+<div class="call-backdrop" id="callBackdrop" onclick="closeCall()"></div>
+<aside class="call-panel" id="callPanel">
+  <div class="call-head">
+    <div class="call-head-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--orange)"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.3 21 3 13.7 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"/></svg>
+      AI Receptionist
+    </div>
+    <button class="call-close" onclick="closeCall()">×</button>
+  </div>
+
+  <div class="call-tabs">
+    <button class="call-tab active" onclick="switchCallTab('live', this)">Live</button>
+    <button class="call-tab" onclick="switchCallTab('recent', this)">Recent Calls</button>
+    <button class="call-tab" onclick="switchCallTab('activity', this)">Activity</button>
+  </div>
+
+  <div class="call-body" id="callBody">
+    <!-- LIVE TAB -->
+    <div class="call-pane" data-pane="live">
+      <div class="active-call" id="liveCallBanner" onclick="viewLiveCall()" style="display:none;">
+        <div class="ac-pic" id="lcPic">V</div>
+        <div class="ac-info">
+          <div class="ac-name" id="lcName">Mrs. Vargas</div>
+          <div class="ac-meta" id="lcMeta">Incoming • <span id="lcTime">00:00</span></div>
+        </div>
+        <div class="ac-status"><span class="live-dot" style="margin:0"></span> LIVE</div>
+      </div>
+
+      <div id="noLive" style="text-align:center; padding: 30px 16px; color: var(--slate-soft); font-size: 12px;">
+        <div style="font-size: 28px; margin-bottom: 8px;">📞</div>
+        <div>No active calls.<br/>The AI will notify you when a customer calls in.</div>
+        <button style="margin-top: 16px; background: var(--orange); color: #fff; border: 0; padding: 9px 18px; border-radius: 7px; font: 600 11px/1 'Inter', sans-serif; cursor: pointer; letter-spacing: 1px;" onclick="simulateIncomingCall()">▶ SIMULATE INCOMING CALL</button>
+      </div>
+
+      <div id="transcriptView" style="display:none;">
+        <div class="tr-header">
+          <div class="tr-pic" id="trPic">V</div>
+          <div style="flex:1;">
+            <div class="tr-name" id="trName">Mrs. Vargas</div>
+            <div class="tr-num" id="trNum">(915) 555-0182 • new customer</div>
+          </div>
+          <div class="ac-status"><span class="live-dot" style="margin:0"></span> <span id="trTimer">00:00</span></div>
+        </div>
+        <div class="transcript-flow" id="transcriptFlow"></div>
+
+        <div class="extracted" id="extractedBox" style="display:none;">
+          <h4>Captured by AI</h4>
+          <div class="ext-row"><div class="k">Customer</div><div class="v" id="ex-cust">—</div></div>
+          <div class="ext-row"><div class="k">Phone</div><div class="v" id="ex-phone">—</div></div>
+          <div class="ext-row"><div class="k">Pickup</div><div class="v" id="ex-pickup">—</div></div>
+          <div class="ext-row"><div class="k">Drop-off</div><div class="v" id="ex-drop">—</div></div>
+          <div class="ext-row"><div class="k">Time</div><div class="v" id="ex-time">—</div></div>
+          <div class="ext-row"><div class="k">Notes</div><div class="v" id="ex-notes">—</div></div>
+        </div>
+
+        <div class="tr-actions" id="trActions" style="display:none;">
+          <button class="accept" onclick="acceptCall()">✓ Create task on board</button>
+          <button class="reject" onclick="resetCall()">Discard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT TAB -->
+    <div class="call-pane" data-pane="recent" style="display:none;">
+      <div class="recent-head">Last 10 calls</div>
+      <div id="recentCalls"></div>
+    </div>
+
+    <!-- ACTIVITY TAB -->
+    <div class="call-pane" data-pane="activity" style="display:none;">
+      <div class="recent-head">Operator activity log</div>
+      <div id="activityLog"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ SCHEDULE VIEW ============ -->
+<section id="view-schedule" class="view">
+  <div class="sched-header">
+    <div>
+      <h1>Schedule</h1>
+      <div class="meta">Plan trips, assign drivers, and let the AI optimize the routes.</div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+      <div class="date-nav">
+        <button onclick="changeDay(-1)" title="Previous day">‹</button>
+        <div class="date-label" id="schedDateLabel">—</div>
+        <button onclick="changeDay(1)" title="Next day">›</button>
+      </div>
+      <div class="sched-toggle">
+        <button class="active" onclick="setSchedMode('day', this)">Day</button>
+        <button onclick="setSchedMode('week', this)">Week</button>
+      </div>
+      <button class="ai-opt-btn" id="aiOptBtn" onclick="runAIOptimize()">
+        <span class="ai-spark">✦</span> AI Optimize Routes
+      </button>
+    </div>
+  </div>
+
+  <div class="sched-summary">
+    <div class="ssum"><div class="l">Scheduled today</div><div class="v" id="schTotal">0</div></div>
+    <div class="ssum highlight"><div class="l">Unassigned</div><div class="v" id="schUnassigned">0</div></div>
+    <div class="ssum"><div class="l">Active drivers</div><div class="v">4 / 5</div></div>
+    <div class="ssum"><div class="l">Capacity used</div><div class="v" id="schCapacity">0%</div></div>
+    <div class="ssum"><div class="l">Next free slot</div><div class="v" id="schNext" style="font-size: 16px; font-family: 'Inter', sans-serif;">—</div></div>
+  </div>
+
+  <div class="bench" id="benchBar">
+    <div class="bench-label">
+      <svg viewBox="0 0 24 24"><path d="M12 22q-2.075 0-3.9-.788T4.9 19.1q-1.325-1.325-2.112-3.15T2 12q0-2.075.788-3.9T4.9 4.9q1.325-1.325 3.15-2.112T12 2q2.075 0 3.9.788T19.1 4.9q1.325 1.325 2.112 3.15T22 12q0 2.075-.788 3.9T19.1 19.1q-1.325 1.325-3.15 2.112T12 22zm0-2q3.35 0 5.675-2.325T20 12q0-3.35-2.325-5.675T12 4Q8.65 4 6.325 6.325T4 12q0 3.35 2.325 5.675T12 20zm0-6.5q.425 0 .713-.288T13 12.5v-5q0-.425-.288-.713T12 6.5q-.425 0-.713.288T11 7.5v5q0 .425.288.713T12 13.5zm0 3q.425 0 .713-.288T13 15.5q0-.425-.288-.713T12 14.5q-.425 0-.713.288T11 15.5q0 .425.288.713T12 16.5z"/></svg>
+      Unassigned — needs a driver
+    </div>
+    <div id="benchTrips" style="display:flex; gap:8px; flex-wrap: wrap; flex: 1;"></div>
+  </div>
+
+  <div class="timeline-wrap">
+    <div class="timeline-head">
+      <div class="tl-corner">Drivers</div>
+      <div class="tl-hours" id="tlHours"></div>
+    </div>
+    <div id="tlBody"></div>
+  </div>
+</section>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast">
+  <div class="toast-ico"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+  <div><div id="toastMsg">Done</div><div class="toast-sub" id="toastSub"></div></div>
+</div>
+
+<!-- ============ OWNER DASHBOARD ============ -->
+<section id="view-kpi" class="view">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 30px; margin:0;">Owner Dashboard</h2>
+        <p style="color: var(--slate); margin: 4px 0 0; font-size: 14px;">Revenue, trips, and utilization — the numbers that drive decisions.</p>
+      </div>
+      <div class="shift-pill" style="background:#fff; border-color:var(--line);">April 2026 • Month to date</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="label">MTD Revenue</div><div class="value">$38,420</div><div class="delta">+14% vs last month</div></div>
+      <div class="kpi"><div class="label">Trips completed</div><div class="value">612</div><div class="delta">+62 vs last month</div></div>
+      <div class="kpi"><div class="label">Avg trips / driver / day</div><div class="value">8.4</div><div class="delta">+1.2</div></div>
+      <div class="kpi"><div class="label">Customer rating</div><div class="value">4.9</div><div class="delta">184 ratings</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head"><h3>Revenue — last 14 days</h3><span class="pcount">daily</span></div>
+        <div style="padding: 22px;">
+          <svg viewBox="0 0 600 240" style="width:100%; height: 240px;">
+            <defs><linearGradient id="grad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#FF6B35" stop-opacity=".35"/><stop offset="100%" stop-color="#FF6B35" stop-opacity="0"/></linearGradient></defs>
+            <g stroke="#E8DFD1" stroke-width="1">
+              <line x1="30" x2="590" y1="40" y2="40"/><line x1="30" x2="590" y1="100" y2="100"/>
+              <line x1="30" x2="590" y1="160" y2="160"/><line x1="30" x2="590" y1="210" y2="210"/>
+            </g>
+            <g fill="#8598B0" font-size="10" font-family="Inter">
+              <text x="0" y="44">$3k</text><text x="0" y="104">$2k</text><text x="0" y="164">$1k</text><text x="0" y="214">$0</text>
+            </g>
+            <path d="M30,180 L70,160 L110,145 L150,155 L190,130 L230,110 L270,125 L310,95 L350,85 L390,90 L430,70 L470,60 L510,72 L550,45 L590,55 L590,210 L30,210 Z" fill="url(#grad)"/>
+            <polyline points="30,180 70,160 110,145 150,155 190,130 230,110 270,125 310,95 350,85 390,90 430,70 470,60 510,72 550,45 590,55" fill="none" stroke="#FF6B35" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <g fill="#FF6B35"><circle cx="590" cy="55" r="4"/><circle cx="550" cy="45" r="4"/></g>
+            <g fill="#4A5B73" font-size="9" font-family="Inter">
+              <text x="30" y="228">Apr 2</text><text x="190" y="228">Apr 6</text>
+              <text x="350" y="228">Apr 10</text><text x="510" y="228">Apr 14</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Top customers (MTD)</h3><span class="pcount">by revenue</span></div>
+        <div style="padding: 4px 18px 18px;" id="topCusts"></div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:20px;">
+      <div class="panel">
+        <div class="panel-head"><h3>Calls per hour — yesterday</h3><span class="pcount">know when to staff up</span></div>
+        <div style="padding: 22px;">
+          <svg viewBox="0 0 600 200" style="width: 100%; height: 200px;">
+            <g fill="#8598B0" font-size="9" font-family="Inter">
+              <text x="5" y="190">6a</text><text x="90" y="190">8a</text><text x="180" y="190">10a</text>
+              <text x="270" y="190">12p</text><text x="360" y="190">2p</text>
+              <text x="450" y="190">4p</text><text x="540" y="190">6p</text>
+            </g>
+            <g id="callBars"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Driver utilization</h3><span class="pcount">hours booked</span></div>
+        <div style="padding: 14px 18px;" id="drivUtil"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ========== NAV ========== */
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el && el.classList.contains('tab')) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/* ========== CLOCK ========== */
+function tick() {
+  const d = new Date();
+  const s = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+  const a = document.getElementById('heroClock'); if (a) a.textContent = s;
+  const b = document.getElementById('opClock'); if (b) b.textContent = s;
+}
+setInterval(tick, 1000); tick();
+
+/* ========== TASK QUEUE ========== */
+const STATES = {
+  new: { label: 'NEW — NEEDS DISPATCH', cls: 'state-new', next: 'dispatched', nextAction: 'Dispatch to driver', nextLabel: 'Communicate route to driver', prompt: null },
+  dispatched: { label: 'DISPATCHED', cls: 'state-dispatched', next: 'arrived_pickup', nextAction: 'Mark driver arrived', nextLabel: 'Confirm driver arrived at pickup', prompt: 'Confirm the driver has arrived at the pickup location?' },
+  arrived_pickup: { label: 'DRIVER AT PICKUP', cls: 'state-arrived_pickup', next: 'en_route', nextAction: 'Mark en route', nextLabel: 'Client on board — mark en route', prompt: 'Client is on board and the driver is on the way to the destination?' },
+  en_route: { label: 'EN ROUTE TO DROP-OFF', cls: 'state-en_route', next: 'completed', nextAction: 'Mark delivered', nextLabel: 'Confirm drop-off and complete trip', prompt: 'Confirm the client was delivered safely?' },
+  completed: { label: 'COMPLETED', cls: 'state-completed', next: null, nextAction: null, nextLabel: null, prompt: null }
+};
+
+let tasks = [
+  { id: 'T-0421', aiTask: 'Communicate route to Ramirez — pickup Mrs. Alvarez (4200 Mesa St) for 9:50 AM trip to Las Palmas Medical', cust: 'Mrs. Alvarez', from: '4200 Mesa St', to: 'Las Palmas Medical', driver: 'M. Ramirez', appt: '10:30 AM', state: 'new', log: [{ t: '07:42', by: 'AI', text: 'Call booked — new task created' }], expanded: false },
+  { id: 'T-0420', aiTask: 'Dispatch Mr. Herrera trip to Soto — pickup from 2318 Album Ave at 9:30 AM to UMC Dialysis', cust: 'Mr. Herrera', from: 'Album Ave', to: 'UMC Dialysis', driver: 'J. Soto', appt: '10:00 AM', state: 'dispatched', log: [{ t: '07:15', by: 'AI', text: 'Call booked' }, { t: '07:38', by: 'Maria G.', text: 'Dispatched to J. Soto — Van 03' }], expanded: false },
+  { id: 'T-0419', aiTask: 'Reyes trip — Chavez just pulled into Sunrise Senior Living, confirm pickup', cust: 'Mrs. Reyes', from: 'Sunrise Senior Living', to: 'Providence Clinic', driver: 'L. Chavez', appt: '9:15 AM', state: 'arrived_pickup', log: [{ t: '06:55', by: 'AI', text: 'Call booked' }, { t: '07:10', by: 'Maria G.', text: 'Dispatched to L. Chavez' }, { t: '08:42', by: 'Driver', text: 'Pulled into Sunrise — waiting' }], expanded: false },
+  { id: 'T-0418', aiTask: 'Ortega trip — Ramirez is en route to Hospitals of Providence, ETA 12 min', cust: 'Mr. Ortega', from: 'Zaragoza', to: 'Hospitals of Providence', driver: 'M. Ramirez', appt: '9:00 AM', state: 'en_route', log: [{ t: '06:30', by: 'AI', text: 'Call booked' }, { t: '07:00', by: 'Maria G.', text: 'Dispatched to M. Ramirez' }, { t: '08:20', by: 'Driver', text: 'Arrived at pickup' }, { t: '08:28', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
+  { id: 'T-0417', aiTask: 'Garcia trip — scheduled for 4:15 PM, needs driver assignment by 3:30 PM', cust: 'Mrs. Garcia', from: 'Montana Ave', to: 'VA Clinic El Paso', driver: '—', appt: '4:30 PM', state: 'new', log: [{ t: '06:10', by: 'AI', text: 'Call booked — schedule for later today' }], expanded: false },
+  { id: 'T-0416', aiTask: 'Delgado trip completed — Soto dropped off client at home, awaiting close-out', cust: 'Mr. Delgado', from: 'Del Sol Medical', to: 'Home — Dyer St', driver: 'J. Soto', appt: '8:00 AM', state: 'en_route', log: [{ t: '05:30', by: 'AI', text: 'Call booked' }, { t: '05:45', by: 'Maria G.', text: 'Dispatched to J. Soto' }, { t: '07:55', by: 'Driver', text: 'Arrived at Del Sol' }, { t: '08:05', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
+];
+
+let filter = 'all';
+let activityLog = [];
+
+function setFilter(btn, f) {
+  filter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderTasks();
+}
+
+function tasksFiltered() {
+  if (filter === 'all') return tasks.filter(t => t.state !== 'completed' || completedKeepIds.has(t.id));
+  return tasks.filter(t => t.state === filter);
+}
+
+// keep a few recently-completed around for UX
+const completedKeepIds = new Set();
+
+function renderTasks() {
+  const el = document.getElementById('taskList');
+  const list = tasksFiltered();
+  document.getElementById('queueCount').textContent = `${tasks.filter(t=>t.state!=='completed').length} open`;
+  // filter counts
+  document.getElementById('fAll').textContent = tasks.filter(t=>t.state!=='completed').length;
+  document.getElementById('fNew').textContent = tasks.filter(t=>t.state==='new').length;
+  document.getElementById('fDispatched').textContent = tasks.filter(t=>t.state==='dispatched').length;
+  document.getElementById('fArrived').textContent = tasks.filter(t=>t.state==='arrived_pickup').length;
+  document.getElementById('fEnroute').textContent = tasks.filter(t=>t.state==='en_route').length;
+  document.getElementById('fDone').textContent = tasks.filter(t=>t.state==='completed').length;
+
+  document.getElementById('sTasksOpen').textContent = tasks.filter(t=>t.state!=='completed').length;
+
+  if (!list.length) { el.innerHTML = '<div class="empty-state">No tasks match this filter. 🎉</div>'; return; }
+  el.innerHTML = list.map(t => {
+    const st = STATES[t.state];
+    const logHtml = t.expanded
+      ? `<div class="task-log">${t.log.map(l => `<div class="task-log-item"><span class="log-time">${l.t}</span><span class="log-by">${l.by}</span><span>${l.text}</span></div>`).join('')}</div>`
+      : `<div class="task-collapsed-log" onclick="toggleLog('${t.id}')">▸ View activity log (${t.log.length})</div>`;
+    const collapseLog = t.expanded ? `<div class="task-collapsed-log" onclick="toggleLog('${t.id}')" style="margin-top:6px;">▾ Hide log</div>` : '';
+    return `
+      <div class="task ${st.cls}" id="task-${t.id}">
+        <div class="task-top">
+          <div class="task-title"><span class="task-id">${t.id}</span>${t.aiTask}</div>
+          <span class="task-state">${st.label}</span>
+        </div>
+        <div class="task-route">
+          <div class="from"><div class="lbl">Pickup</div><div class="val">${t.from}</div></div>
+          <div class="arrow">→</div>
+          <div class="to"><div class="lbl">Drop-off</div><div class="val">${t.to}</div></div>
+          <div style="margin-left:auto; text-align:right;"><div class="lbl">Appt</div><div class="val">${t.appt}</div></div>
+        </div>
+        <div class="task-details">
+          <div class="dt-label">Client</div>
+          <div class="dt-label">Driver</div>
+          <div class="dt-label">Vehicle</div>
+          <div class="dt-value">${t.cust}</div>
+          <div class="dt-value">${t.driver}</div>
+          <div class="dt-value">—</div>
+        </div>
+        <div class="task-actions">
+          ${st.next ? `<button class="task-btn" onclick="advanceTask('${t.id}')">✓ ${st.nextAction}</button>` : '<span style="color:var(--ok); font-weight:600; font-size:12px;">✓ Trip complete</span>'}
+          <button class="task-btn secondary" onclick="notifyDriver('${t.id}')">📱 Message driver</button>
+          <button class="task-btn ghost" onclick="toggleLog('${t.id}')">${t.expanded ? 'Hide log' : 'View log'}</button>
+        </div>
+        ${!t.expanded ? `<div class="task-collapsed-log" onclick="toggleLog('${t.id}')" style="margin-top:10px;">▸ Activity log (${t.log.length} entries)</div>` : `<div class="task-log">${t.log.map(l=>`<div class="task-log-item"><span class="log-time">${l.t}</span><span class="log-by">${l.by}</span><span>${l.text}</span></div>`).join('')}</div>`}
+      </div>`;
+  }).join('');
+}
+
+function toggleLog(id) {
+  const t = tasks.find(x => x.id === id);
+  if (t) { t.expanded = !t.expanded; renderTasks(); }
+}
+
+function advanceTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  const st = STATES[t.state];
+  if (!st.next) return;
+  if (st.prompt && !confirm(st.prompt)) return;
+
+  const nextState = st.next;
+  const nextLabel = STATES[nextState].label;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  let logText = '';
+  if (t.state === 'new') logText = `Route communicated to ${t.driver} — task dispatched`;
+  else if (t.state === 'dispatched') logText = `Confirmed driver arrived at pickup`;
+  else if (t.state === 'arrived_pickup') logText = `Client on board — trip en route to ${t.to}`;
+  else if (t.state === 'en_route') logText = `Trip completed — client delivered to ${t.to}`;
+
+  t.log.push({ t: time, by: 'Maria G.', text: logText });
+  t.state = nextState;
+  if (nextState === 'completed') completedKeepIds.add(id);
+
+  pushActivity(`${t.id} ${nextLabel} — ${t.cust} / ${t.driver}`);
+  renderTasks();
+
+  const card = document.getElementById('task-' + id);
+  if (card) card.classList.add('highlight');
+  setTimeout(() => { if (card) card.classList.remove('highlight'); }, 2000);
+}
+
+function notifyDriver(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  t.log.push({ t: time, by: 'Maria G.', text: `Message sent to ${t.driver} via driver app` });
+  pushActivity(`Messaged ${t.driver} about ${t.id}`);
+  renderTasks();
+}
+
+function pushActivity(text) {
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  activityLog.unshift({ time, text });
+  if (activityLog.length > 40) activityLog.pop();
+  renderActivity();
+}
+
+function renderActivity() {
+  const el = document.getElementById('activityFeed');
+  const big = document.getElementById('activityLog');
+  document.getElementById('actCount').textContent = activityLog.length;
+  if (!activityLog.length) {
+    if (el) el.innerHTML = '<div style="padding: 14px 0; text-align: center; font-style: italic; color: var(--slate-soft); font-size: 11px;">Actions will appear here as you work.</div>';
+    if (big) big.innerHTML = '<div style="padding: 20px 0; text-align: center; font-style: italic; color: var(--slate-soft); font-size: 12px;">No activity yet.</div>';
+    return;
+  }
+  const html = activityLog.slice(0, 8).map(a => `<div style="padding: 6px 0; border-bottom: 1px solid var(--line-soft); display: flex; gap: 10px;"><span style="color: var(--orange); font-variant-numeric: tabular-nums; font-weight:600; min-width: 38px;">${a.time}</span><span style="flex:1;">${a.text}</span></div>`).join('');
+  if (el) el.innerHTML = html;
+  if (big) big.innerHTML = activityLog.map(a => `<div class="activity-item"><span class="act-time">${a.time}</span><span class="act-text">${a.text}</span></div>`).join('');
+}
+
+/* ========== DRIVERS ========== */
+const drivers = [
+  { ini: 'MR', name: 'M. Ramirez', sub: 'Van 07 • 8h today', status: 'En route', cls: 'ok' },
+  { ini: 'JS', name: 'J. Soto', sub: 'Van 03 • 6h today', status: 'En route', cls: 'ok' },
+  { ini: 'LC', name: 'L. Chavez', sub: 'Van 11 • 7h today', status: 'At pickup', cls: 'warn' },
+  { ini: 'RF', name: 'R. Fox', sub: 'Van 09 • available', status: 'Free', cls: 'info' },
+  { ini: 'DM', name: 'D. Mendez', sub: 'Van 05 • on break', status: 'Break', cls: 'info' },
+];
+function renderDrivers() {
+  const el = document.getElementById('driverList');
+  if (!el) return;
+  el.innerHTML = drivers.map(d => `
+    <div class="driver-item">
+      <div class="driver-av${d.status==='Break'?' offline':''}">${d.ini}</div>
+      <div class="driver-main"><div class="driver-name">${d.name}</div><div class="driver-sub">${d.sub}</div></div>
+      <div class="driver-stat"><span class="pill ${d.cls}" style="background:${d.cls==='ok'?'var(--ok-soft)':d.cls==='warn'?'var(--warn-soft)':'var(--info-soft)'}; color:${d.cls==='ok'?'var(--ok)':d.cls==='warn'?'var(--warn)':'var(--info)'};">${d.status}</span></div>
+    </div>
+  `).join('');
+}
+renderDrivers();
+
+/* ========== CALL PANEL ========== */
+function toggleCall() {
+  const panel = document.getElementById('callPanel');
+  const backdrop = document.getElementById('callBackdrop');
+  const btn = document.getElementById('callToggle');
+  if (panel.classList.contains('open')) { closeCall(); return; }
+  panel.classList.add('open'); backdrop.classList.add('open'); btn.classList.add('active');
+}
+function closeCall() {
+  document.getElementById('callPanel').classList.remove('open');
+  document.getElementById('callBackdrop').classList.remove('open');
+  document.getElementById('callToggle').classList.remove('active');
+}
+function switchCallTab(which, el) {
+  document.querySelectorAll('.call-tab').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.call-pane').forEach(p => p.style.display = p.getAttribute('data-pane') === which ? 'block' : 'none');
+  if (which === 'recent') renderRecentCalls();
+}
+
+const recentCalls = [
+  { name: 'Mrs. Alvarez', num: '(915) 555-0149', when: '07:42', booked: 'T-0421' },
+  { name: 'Mr. Herrera', num: '(915) 555-0203', when: '07:15', booked: 'T-0420' },
+  { name: 'Mrs. Reyes', num: '(915) 555-0317', when: '06:55', booked: 'T-0419' },
+  { name: 'Mr. Ortega', num: '(915) 555-0248', when: '06:30', booked: 'T-0418' },
+  { name: 'Mrs. Garcia', num: '(915) 555-0411', when: '06:10', booked: 'T-0417' },
+];
+function renderRecentCalls() {
+  const el = document.getElementById('recentCalls');
+  el.innerHTML = recentCalls.map(c => `
+    <div class="recent-call">
+      <div class="rc-ico"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.3 21 3 13.7 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .7-.2 1z"/></svg></div>
+      <div class="rc-main"><div class="rc-name">${c.name}</div><div class="rc-sub">${c.num} • booked ${c.booked}</div></div>
+      <div class="rc-time">${c.when}</div>
+    </div>`).join('');
+}
+
+/* ========== LIVE CALL SIMULATION ========== */
+const scriptLines = [
+  { t: 600, who: 'ai', text: 'Thank you for calling Viba Transportation. How can I help you today?' },
+  { t: 4200, who: 'caller', text: "Hi, I need a ride tomorrow morning for my mother to Las Palmas Medical Center." },
+  { t: 9000, who: 'ai', text: 'Of course. Could I have the patient\'s name, please?' },
+  { t: 12500, who: 'caller', text: "Her name is Carmen Vargas." },
+  { t: 15500, who: 'ai', text: 'Thank you. And the pickup address?' },
+  { t: 18500, who: 'caller', text: '5410 Stanton Street, El Paso.' },
+  { t: 22000, who: 'ai', text: 'Got it. What time is her appointment?' },
+  { t: 25000, who: 'caller', text: "9:30 AM, and she'll need a wheelchair van." },
+  { t: 29500, who: 'ai', text: 'Wheelchair-accessible van noted. I\'ll schedule the pickup for 8:45 AM. Shall I confirm?' },
+  { t: 35000, who: 'caller', text: "Yes, please." },
+  { t: 37500, who: 'ai', text: 'Confirmed. You\'ll receive a text when the driver is 10 minutes away. Have a great day.' },
+];
+const fieldUp = [
+  { t: 12500, id: 'ex-cust', v: 'Carmen Vargas' },
+  { t: 600, id: 'ex-phone', v: '(915) 555-0182' },
+  { t: 18500, id: 'ex-pickup', v: '5410 Stanton St, El Paso' },
+  { t: 4200, id: 'ex-drop', v: 'Las Palmas Medical' },
+  { t: 25000, id: 'ex-time', v: 'Tomorrow, 8:45 AM pickup' },
+  { t: 25000, id: 'ex-notes', v: 'Wheelchair-accessible van' },
+];
+
+let callTimers = [];
+let callStartMs = 0;
+let callTickId = null;
+let callInProgress = false;
+
+function simulateIncomingCall() {
+  callInProgress = true;
+  document.getElementById('noLive').style.display = 'none';
+  document.getElementById('liveCallBanner').style.display = 'flex';
+  document.getElementById('transcriptView').style.display = 'block';
+  document.getElementById('extractedBox').style.display = 'block';
+  document.getElementById('transcriptFlow').innerHTML = '';
+  ['ex-cust','ex-phone','ex-pickup','ex-drop','ex-time','ex-notes'].forEach(id => { document.getElementById(id).textContent = '—'; });
+
+  callStartMs = Date.now();
+  callTickId = setInterval(() => {
+    const s = Math.floor((Date.now() - callStartMs) / 1000);
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    document.getElementById('lcTime').textContent = `${mm}:${ss}`;
+    document.getElementById('trTimer').textContent = `${mm}:${ss}`;
+  }, 500);
+
+  scriptLines.forEach(line => {
+    const id = setTimeout(() => {
+      const t = document.getElementById('transcriptFlow');
+      const who = line.who === 'ai' ? 'VIBA AI' : 'MRS. VARGAS';
+      const div = document.createElement('div');
+      div.className = 'msg ' + line.who;
+      div.innerHTML = `<div class="who">${who}</div><div class="bubble">${line.text}</div>`;
+      t.appendChild(div);
+      t.scrollTop = t.scrollHeight;
+    }, line.t);
+    callTimers.push(id);
+  });
+  fieldUp.forEach(u => {
+    const id = setTimeout(() => {
+      const el = document.getElementById(u.id);
+      el.textContent = u.v;
+      el.style.transition = 'background .3s';
+      el.style.background = 'rgba(255,107,53,.3)';
+      setTimeout(() => { el.style.background = 'transparent'; }, 600);
+    }, u.t);
+    callTimers.push(id);
+  });
+  const endId = setTimeout(() => {
+    if (callTickId) clearInterval(callTickId);
+    document.getElementById('trActions').style.display = 'flex';
+    pushActivity(`Call from Mrs. Vargas ended — awaiting approval to create task`);
+  }, 40000);
+  callTimers.push(endId);
+}
+
+function viewLiveCall() {}
+
+function acceptCall() {
+  const newTask = {
+    id: 'T-0' + (422 + tasks.filter(t => /^T-04\d+$/.test(t.id)).length),
+    aiTask: 'Dispatch Mrs. Vargas trip — pickup 5410 Stanton St at 8:45 AM, wheelchair-accessible van needed to Las Palmas Medical',
+    cust: 'Mrs. Vargas',
+    from: '5410 Stanton St',
+    to: 'Las Palmas Medical',
+    driver: '—',
+    appt: '9:30 AM',
+    state: 'new',
+    log: [{ t: new Date().toTimeString().slice(0,5), by: 'AI', text: 'Call booked — new task created from live call' }],
+    expanded: false,
+  };
+  tasks.unshift(newTask);
+  recentCalls.unshift({ name: 'Mrs. Vargas', num: '(915) 555-0182', when: new Date().toTimeString().slice(0,5), booked: newTask.id });
+  renderTasks();
+  renderRecentCalls();
+  pushActivity(`New task ${newTask.id} created from Vargas call`);
+  document.getElementById('sTrips').textContent = (parseInt(document.getElementById('sTrips').textContent,10) + 1);
+  document.getElementById('sCalls').textContent = (parseInt(document.getElementById('sCalls').textContent,10) + 1);
+  resetCall();
+  const card = document.getElementById('task-' + newTask.id);
+  if (card) {
+    card.classList.add('highlight');
+    setTimeout(() => card.classList.remove('highlight'), 2000);
+  }
+  closeCall();
+}
+
+function resetCall() {
+  callTimers.forEach(t => clearTimeout(t));
+  callTimers = [];
+  if (callTickId) clearInterval(callTickId);
+  callTickId = null;
+  callInProgress = false;
+  document.getElementById('noLive').style.display = 'block';
+  document.getElementById('liveCallBanner').style.display = 'none';
+  document.getElementById('transcriptView').style.display = 'none';
+  document.getElementById('extractedBox').style.display = 'none';
+  document.getElementById('trActions').style.display = 'none';
+  document.getElementById('lcTime').textContent = '00:00';
+  document.getElementById('trTimer').textContent = '00:00';
+}
+
+/* ========== INITIAL RENDER ========== */
+renderTasks();
+renderActivity();
+
+/* ========== OWNER KPI ========== */
+const customers = [
+  { name: 'Sunrise Senior Living', rev: 8420, trips: 112 },
+  { name: 'Providence Clinic Network', rev: 6150, trips: 78 },
+  { name: 'UMC Dialysis Center', rev: 5380, trips: 64 },
+  { name: 'Del Sol Medical Group', rev: 3720, trips: 49 },
+  { name: 'Las Palmas Medical', rev: 3290, trips: 42 },
+  { name: 'VA Clinic El Paso', rev: 2840, trips: 36 },
+];
+const maxRev = Math.max(...customers.map(c => c.rev));
+(function(){
+  const el = document.getElementById('topCusts');
+  if (!el) return;
+  el.innerHTML = customers.map(c => `
+    <div style="padding: 10px 0; border-bottom: 1px solid var(--line);">
+      <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:6px;">
+        <span style="font-weight:600; color: var(--navy);">${c.name}</span>
+        <span style="color: var(--orange); font-weight: 700;">$${c.rev.toLocaleString()}</span>
+      </div>
+      <div style="background: var(--line); height: 6px; border-radius: 3px; overflow:hidden;">
+        <div style="background: var(--orange); height: 100%; width: ${(c.rev/maxRev)*100}%;"></div>
+      </div>
+      <div style="color: var(--slate); font-size: 11px; margin-top: 4px;">${c.trips} trips</div>
+    </div>
+  `).join('');
+})();
+(function(){
+  const el = document.getElementById('callBars');
+  if (!el) return;
+  const data = [2,3,5,9,14,18,15,12,16,19,17,11,8,6];
+  const maxV = Math.max(...data);
+  let svg = '';
+  const barW = 36, gap = 6, startX = 30;
+  data.forEach((v,i) => {
+    const h = (v/maxV)*150;
+    const x = startX + i*(barW+gap);
+    svg += `<rect x="${x}" y="${170-h}" width="${barW}" height="${h}" fill="#FF6B35" rx="3"/>`;
+    svg += `<text x="${x+barW/2}" y="${165-h}" fill="#0A2540" font-size="10" font-family="Inter" font-weight="600" text-anchor="middle">${v}</text>`;
+  });
+  el.innerHTML = svg;
+})();
+/* =====================================================
+   SCHEDULE — day timeline with AI optimize
+   ===================================================== */
+const SCHED_START = 7;   // 7:00
+const SCHED_END = 21;    // 21:00 (14 hours)
+const SCHED_HOURS = SCHED_END - SCHED_START;
+
+const schedDrivers = [
+  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central', avail: true },
+  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside', avail: true },
+  { ini: 'LC', name: 'L. Chavez',  van: 'Van 11', zone: 'Northeast', avail: true },
+  { ini: 'RF', name: 'R. Fox',     van: 'Van 09', zone: 'East', avail: true },
+  { ini: 'DM', name: 'D. Mendez',  van: 'Van 05', zone: 'Mission Valley', avail: false },
+];
+
+// today's trips (start in decimal hours, duration in hours)
+let schedTrips = [
+  { id: 'S-001', title: 'Delgado → Home',         meta: 'Del Sol → Dyer St',       driver: 'J. Soto',     start: 7.5,  dur: 0.75, state: 'completed' },
+  { id: 'S-002', title: 'Ortega pickup',          meta: 'Zaragoza → Providence',   driver: 'M. Ramirez',  start: 8.3,  dur: 0.85, state: 'en_route' },
+  { id: 'S-003', title: 'Reyes pickup',           meta: 'Sunrise → Providence',    driver: 'L. Chavez',   start: 8.7,  dur: 0.7,  state: 'dispatched' },
+  { id: 'S-004', title: 'Herrera → UMC',          meta: 'Album Ave → UMC Dialysis', driver: 'J. Soto',    start: 9.3,  dur: 0.9,  state: 'dispatched' },
+  { id: 'S-005', title: 'Alvarez → Las Palmas',   meta: 'Mesa St → Las Palmas',    driver: 'M. Ramirez',  start: 9.8,  dur: 1.0,  state: 'new' },
+  { id: 'S-006', title: 'Reyes return home',      meta: 'Providence → Sunrise',    driver: 'L. Chavez',   start: 10.8, dur: 0.65, state: 'new' },
+  { id: 'S-007', title: 'Alvarez return',         meta: 'Las Palmas → Mesa St',    driver: 'M. Ramirez',  start: 11.5, dur: 0.85, state: 'new' },
+  { id: 'S-008', title: 'Ortega return',          meta: 'Providence → Zaragoza',   driver: 'R. Fox',      start: 13.0, dur: 0.85, state: 'new' },
+  { id: 'S-009', title: 'Garcia → VA Clinic',     meta: 'Montana Ave → VA Clinic', driver: 'R. Fox',      start: 16.0, dur: 1.0,  state: 'new' },
+];
+
+// unassigned pool — these appear in the bench bar until optimized/assigned
+let unassigned = [
+  { id: 'U-101', title: 'Jimenez → Cardiology',  meta: 'Cotton St → El Paso Cardiology', dur: 0.75, preferredTime: 10.5 },
+  { id: 'U-102', title: 'Castro → Sierra Med',   meta: 'Yarbrough → Sierra Medical',     dur: 0.9,  preferredTime: 12.0 },
+  { id: 'U-103', title: 'Vargas → Las Palmas',   meta: 'Stanton St → Las Palmas Imaging',dur: 0.9,  preferredTime: 14.5 },
+  { id: 'U-104', title: 'Soto → Del Sol',        meta: 'Lee Trevino → Del Sol Dialysis', dur: 0.7,  preferredTime: 15.5 },
+];
+
+let schedMode = 'day';
+let schedDate = new Date();
+
+function setSchedMode(m, el) {
+  schedMode = m;
+  document.querySelectorAll('.sched-toggle button').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderSchedule();
+}
+function changeDay(dir) {
+  schedDate.setDate(schedDate.getDate() + dir);
+  renderSchedule();
+}
+function fmtDate(d) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const b = new Date(d); b.setHours(0,0,0,0);
+  const diff = Math.round((b - today) / 86400000);
+  if (diff === 0) return 'Today — ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (diff === 1) return 'Tomorrow — ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (diff === -1) return 'Yesterday — ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+function renderSchedule() {
+  document.getElementById('schedDateLabel').textContent = fmtDate(schedDate);
+
+  // hour headers
+  const hoursEl = document.getElementById('tlHours');
+  let h = '';
+  for (let i = SCHED_START; i < SCHED_END; i++) {
+    const ampm = i < 12 ? 'AM' : 'PM';
+    const hr = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+    h += `<div class="tl-hour">${hr}<div class="sub">${ampm}</div></div>`;
+  }
+  hoursEl.innerHTML = h;
+
+  // body rows per driver
+  const body = document.getElementById('tlBody');
+  body.innerHTML = schedDrivers.map(d => {
+    const trips = schedTrips.filter(t => t.driver === d.name).sort((a,b) => a.start - b.start);
+    const tripsHtml = trips.map(t => {
+      const leftPct = ((t.start - SCHED_START) / SCHED_HOURS) * 100;
+      const widthPct = (t.dur / SCHED_HOURS) * 100;
+      return `<div class="tl-trip ${t.state}" style="left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;" title="${t.title} — ${fmtTripTime(t)}">
+        <div class="tt-title">${t.title}</div>
+        <div class="tt-meta">${fmtTripTime(t)} • ${t.meta}</div>
+      </div>`;
+    }).join('');
+
+    // find first post-now gap for "next available" marker
+    const now = nowHoursDecimal();
+    let gapStart = Math.max(now, SCHED_START);
+    let gapHtml = '';
+    if (d.avail) {
+      for (const t of trips) {
+        if (t.start > gapStart + 0.2) break;
+        if (t.start + t.dur > gapStart) gapStart = t.start + t.dur;
+      }
+      // next trip after gapStart
+      const next = trips.find(t => t.start > gapStart);
+      const gapEnd = next ? next.start : SCHED_END;
+      if (gapEnd - gapStart > 0.25 && gapStart < SCHED_END) {
+        const leftPct = ((gapStart - SCHED_START) / SCHED_HOURS) * 100;
+        const wPct = ((Math.min(gapEnd, gapStart + 1.5) - gapStart) / SCHED_HOURS) * 100;
+        const isOverallNext = (d.name === nextAvailableGlobal.driver && Math.abs(gapStart - nextAvailableGlobal.hour) < 0.1);
+        gapHtml = `<div class="tl-gap ${isOverallNext ? 'next-available' : ''}" style="left:${leftPct}%; width:calc(${wPct}% - 4px); margin-left:2px;"></div>`;
+      }
+    }
+
+    // NOW line inside the track
+    const nowPct = ((now - SCHED_START) / SCHED_HOURS) * 100;
+    const nowHtml = (now >= SCHED_START && now <= SCHED_END) ? `<div class="nowline" style="left:${nowPct}%"></div>` : '';
+
+    return `
+      <div class="tl-row">
+        <div class="tl-driver">
+          <div class="tl-driver-av${d.avail ? '' : ' offline'}">${d.ini}</div>
+          <div class="tl-driver-main">
+            <div class="tl-driver-name">${d.name}</div>
+            <div class="tl-driver-sub">${d.van} • ${d.zone}${d.avail ? '' : ' • off today'}</div>
+          </div>
+        </div>
+        <div class="tl-track">${gapHtml}${nowHtml}${tripsHtml}</div>
+      </div>`;
+  }).join('');
+
+  // summary + bench
+  document.getElementById('schTotal').textContent = schedTrips.length;
+  document.getElementById('schUnassigned').textContent = unassigned.length;
+  const totalDriverHours = schedDrivers.filter(d=>d.avail).length * SCHED_HOURS;
+  const bookedHours = schedTrips.reduce((s,t) => s + t.dur, 0);
+  document.getElementById('schCapacity').textContent = Math.round((bookedHours/totalDriverHours)*100) + '%';
+
+  document.getElementById('schNext').textContent =
+    `${nextAvailableGlobal.driver} @ ${fmtTimeHours(nextAvailableGlobal.hour)}`;
+
+  const bench = document.getElementById('benchTrips');
+  if (unassigned.length === 0) {
+    bench.innerHTML = '<div class="bench-empty">✓ Everything is assigned. The AI will flag anything new that needs attention.</div>';
+  } else {
+    bench.innerHTML = unassigned.map(u => `
+      <div class="unassigned-trip" title="Needs assignment">
+        <div class="ut-title">${u.title}</div>
+        <div class="ut-meta">${u.meta} • ${Math.round(u.dur*60)} min • preferred ~${fmtTimeHours(u.preferredTime)}</div>
+      </div>`).join('');
+  }
+}
+
+function fmtTripTime(t) {
+  return fmtTimeHours(t.start) + '–' + fmtTimeHours(t.start + t.dur);
+}
+function fmtTimeHours(h) {
+  const hr = Math.floor(h);
+  const m = Math.round((h - hr) * 60);
+  const ampm = hr < 12 ? 'AM' : 'PM';
+  const disp = hr === 0 ? 12 : (hr > 12 ? hr - 12 : hr);
+  return `${disp}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+function nowHoursDecimal() {
+  const d = new Date();
+  return d.getHours() + d.getMinutes()/60;
+}
+
+/* ===== NEXT AVAILABLE SLOT calc ===== */
+let nextAvailableGlobal = { driver: 'R. Fox', hour: 11.25, zone: 'East' };
+
+function computeNextAvailable() {
+  const now = nowHoursDecimal();
+  let best = null;
+  schedDrivers.filter(d => d.avail).forEach(d => {
+    const trips = schedTrips.filter(t => t.driver === d.name).sort((a,b) => a.start - b.start);
+    let cursor = Math.max(now, SCHED_START);
+    for (const t of trips) {
+      if (t.start > cursor + 0.25) break;
+      if (t.start + t.dur > cursor) cursor = t.start + t.dur;
+    }
+    if (cursor < SCHED_END) {
+      if (!best || cursor < best.hour) best = { driver: d.name, hour: cursor, zone: d.zone };
+    }
+  });
+  // fallback
+  if (!best) best = { driver: '—', hour: 0, zone: '—' };
+  nextAvailableGlobal = best;
+  // update header widget
+  const nd = document.getElementById('nsDriver');
+  const nt = document.getElementById('nsTime');
+  const nz = document.getElementById('nsZone');
+  if (nd) nd.textContent = best.driver;
+  if (nt) nt.textContent = fmtTimeHours(best.hour);
+  if (nz) nz.textContent = best.zone;
+}
+
+/* ===== AI OPTIMIZE ===== */
+function runAIOptimize() {
+  const btn = document.getElementById('aiOptBtn');
+  if (btn.classList.contains('running') || unassigned.length === 0) {
+    if (unassigned.length === 0) showToast('Already optimized', 'Every trip is assigned. Nothing to do.');
+    return;
+  }
+  btn.classList.add('running');
+  btn.innerHTML = '<span class="ai-spark">✦</span> Optimizing…';
+
+  const beforeCount = unassigned.length;
+
+  // Pretend to run the optimizer: staggered placement with animation
+  const queue = [...unassigned];
+  unassigned = [];
+  let savedMinutes = 0;
+  let placements = [];
+
+  queue.forEach((u, i) => {
+    setTimeout(() => {
+      // pick best driver: one with a gap near the preferred time + lightest load + right zone
+      const preferred = u.preferredTime;
+      const candidates = schedDrivers.filter(d => d.avail).map(d => {
+        const trips = schedTrips.filter(t => t.driver === d.name).sort((a,b) => a.start - b.start);
+        // find earliest gap >= u.dur that starts near preferred
+        let cursor = Math.max(nowHoursDecimal(), SCHED_START);
+        let chosenStart = null;
+        const considered = [];
+        for (let j = 0; j <= trips.length; j++) {
+          const nextStart = j < trips.length ? trips[j].start : SCHED_END;
+          if (nextStart - cursor >= u.dur) {
+            const startHere = Math.max(cursor, preferred - 0.2);
+            if (startHere + u.dur <= nextStart) considered.push(startHere);
+          }
+          if (j < trips.length) cursor = Math.max(cursor, trips[j].start + trips[j].dur);
+        }
+        if (considered.length) {
+          // pick the slot closest to preferred
+          considered.sort((a,b) => Math.abs(a - preferred) - Math.abs(b - preferred));
+          chosenStart = considered[0];
+        }
+        // load score
+        const totalLoad = trips.reduce((s,t) => s + t.dur, 0);
+        return { driver: d.name, chosenStart, load: totalLoad };
+      }).filter(c => c.chosenStart !== null);
+
+      if (candidates.length === 0) {
+        // all full — put back on bench
+        unassigned.push(u);
+        renderSchedule();
+        return;
+      }
+      candidates.sort((a,b) =>
+        Math.abs(a.chosenStart - preferred) - Math.abs(b.chosenStart - preferred) || (a.load - b.load)
+      );
+      const pick = candidates[0];
+      savedMinutes += 12 + Math.floor(Math.random() * 8); // fake saved minutes per assignment
+      schedTrips.push({
+        id: u.id.replace('U-','S-A'),
+        title: u.title, meta: u.meta,
+        driver: pick.driver,
+        start: pick.chosenStart,
+        dur: u.dur,
+        state: 'new'
+      });
+      placements.push({ title: u.title, driver: pick.driver, time: fmtTimeHours(pick.chosenStart) });
+      // mark bench rendering
+      renderSchedule();
+      // animate the newly-placed trip
+      setTimeout(() => {
+        document.querySelectorAll('.tl-trip').forEach(el => {
+          if (el.textContent.includes(u.title.split(' ')[0])) el.classList.add('placing');
+        });
+      }, 10);
+      computeNextAvailable();
+
+      if (i === queue.length - 1) {
+        setTimeout(() => {
+          btn.classList.remove('running');
+          btn.innerHTML = '<span class="ai-spark">✦</span> AI Optimize Routes';
+          showToast(
+            `Optimized — ${beforeCount} trip${beforeCount===1?'':'s'} placed`,
+            `Saved ~${savedMinutes} min of driver time. Next free: ${nextAvailableGlobal.driver} @ ${fmtTimeHours(nextAvailableGlobal.hour)}.`
+          );
+          pushActivity(`AI optimized ${beforeCount} trips — saved ~${savedMinutes} min of drive time`);
+        }, 300);
+      }
+    }, 400 + i * 500);
+  });
+}
+
+function showToast(msg, sub) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastSub').textContent = sub || '';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4200);
+}
+
+// initial compute + render
+computeNextAvailable();
+renderSchedule();
+// refresh every 30s so NOW line moves
+setInterval(() => {
+  computeNextAvailable();
+  if (document.getElementById('view-schedule').classList.contains('active')) renderSchedule();
+}, 30000);
+
+const driversU = [
+  { name: 'M. Ramirez', util: 92 }, { name: 'J. Soto', util: 87 }, { name: 'L. Chavez', util: 81 },
+  { name: 'R. Fox', util: 74 }, { name: 'D. Mendez', util: 69 }, { name: 'A. Ruiz', util: 58 },
+];
+(function(){
+  const el = document.getElementById('drivUtil');
+  if (!el) return;
+  el.innerHTML = driversU.map(d => `
+    <div style="padding: 10px 0;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+        <span style="font-weight:600; color:var(--navy)">${d.name}</span>
+        <span style="color:var(--slate); font-weight:600;">${d.util}%</span>
+      </div>
+      <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden;">
+        <div style="background: linear-gradient(90deg, var(--orange), var(--orange-light)); height:100%; width:${d.util}%;"></div>
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+</body>
+</html>

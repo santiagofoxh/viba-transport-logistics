@@ -1,0 +1,27 @@
+# Render Blueprint for Viba Transport Logistics.
+# Deploy by pointing Render at this repo — it'll create the web service automatically.
+services:
+  - type: web
+    name: viba-transport-logistics
+    env: node
+    plan: free
+    region: oregon          # change to closest region if you prefer
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true      # Render auto-generates a strong secret
+      - key: WEBHOOK_SECRET
+        generateValue: true      # used for the AI-capture webhook
+      - key: DEFAULT_DEMO_PASSWORD
+        sync: false              # you'll set this manually in the Render dashboard
+    # Persistent disk (optional — requires paid plan starting at $7/mo).
+    # Uncomment when ready to keep SQLite data across deploys.
+    # disk:
+    #   name: viba-data
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1

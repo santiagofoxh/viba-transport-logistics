@@ -1,0 +1,24 @@
+{
+  "name": "viba-transport-logistics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Viba Transport Logistics — dispatch, GPS, and AI call platform for Viba Transportation (El Paso TX).",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.1.2",
+    "connect-sqlite3": "^0.9.15",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0"
+  }
+}

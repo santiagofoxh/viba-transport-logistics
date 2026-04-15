@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Viba Transport Logistics — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A2540;
+    --navy-deep: #06192E;
+    --orange: #FF6B35;
+    --orange-light: #FFB088;
+    --cream: #FBF6EF;
+    --slate: #4A5B73;
+    --line: #E8DFD1;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--navy-deep);
+    display: grid; place-items: center;
+    color: var(--navy);
+    position: relative; overflow: hidden;
+  }
+  body::before {
+    content: ''; position: absolute; top: -120px; right: -120px;
+    width: 360px; height: 360px; background: var(--orange); opacity: .9; transform: rotate(14deg);
+  }
+  body::after {
+    content: ''; position: absolute; bottom: -100px; left: -100px;
+    width: 240px; height: 240px; background: var(--orange); opacity: .4; border-radius: 50%;
+  }
+  .card {
+    background: #fff; border-radius: 14px;
+    padding: 44px 40px; width: 100%; max-width: 440px;
+    box-shadow: 0 30px 70px rgba(0,0,0,.35);
+    position: relative; z-index: 1;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .logo-mark { width: 44px; height: 44px; background: var(--orange); border-radius: 10px; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(255,107,53,.4); }
+  .logo-mark svg { width: 22px; height: 22px; fill: #fff; }
+  .brand { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+  .sub { font-size: 10px; color: var(--orange); letter-spacing: 3px; text-transform: uppercase; margin-top: 3px; }
+
+  h1 { font-family: 'Playfair Display', serif; font-size: 28px; margin: 0 0 6px; }
+  .lead { color: var(--slate); font-size: 14px; margin: 0 0 24px; }
+
+  label { display: block; font-size: 11px; letter-spacing: 1.5px; font-weight: 700; color: var(--slate); text-transform: uppercase; margin-bottom: 6px; margin-top: 14px; }
+  input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px;
+    font: 500 14px 'Inter', sans-serif; color: var(--navy); background: var(--cream);
+    transition: border-color .15s, background .15s;
+  }
+  input:focus { outline: none; border-color: var(--orange); background: #fff; }
+
+  .btn {
+    margin-top: 22px; width: 100%;
+    background: var(--orange); color: #fff; border: 0;
+    padding: 14px; border-radius: 8px; font: 700 14px 'Inter', sans-serif;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(255,107,53,.35);
+    transition: transform .1s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,107,53,.5); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  .err {
+    background: #FCE8E6; border: 1px solid #F5C2BB; color: #B3261E;
+    padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 16px;
+    display: none;
+  }
+  .err.show { display: block; }
+
+  .hint {
+    margin-top: 24px; padding: 14px 16px; background: var(--cream);
+    border-left: 3px solid var(--orange); border-radius: 6px;
+    font-size: 12px; color: var(--slate); line-height: 1.6;
+  }
+  .hint strong { color: var(--navy); }
+  .hint code { background: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11.5px; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M3 4h11v9H3zM14 8h4l3 3v2h-7zM6 17a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm12 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg></div>
+      <div><div class="brand">Viba Transport</div><div class="sub">Logistics</div></div>
+    </div>
+    <h1>Sign in</h1>
+    <p class="lead">Operator console, schedule, and owner dashboard.</p>
+
+    <form id="loginForm" autocomplete="on">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email" value="operator@viba.test" />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+      <div class="err" id="err"></div>
+      <button class="btn" type="submit" id="btn">Sign in</button>
+    </form>
+
+    <div class="hint">
+      <strong>Demo credentials</strong> (seeded on first boot):<br/>
+      Operator — <code>operator@viba.test</code><br/>
+      Owner — <code>owner@viba.test</code><br/>
+      Default password: <code>viba2026</code> (override via <code>DEFAULT_DEMO_PASSWORD</code>)
+    </div>
+  </div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const err = document.getElementById('err');
+  const btn = document.getElementById('btn');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const r = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        err.textContent = body.error || 'Sign in failed.';
+        err.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Sign in';
+        return;
+      }
+      window.location.href = '/';
+    } catch (e) {
+      err.textContent = 'Network error. Try again.';
+      err.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Sign in';
+    }
+  });
+</script>
+</body>
+</html>
