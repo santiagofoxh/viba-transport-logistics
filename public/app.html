@@ -777,7 +777,37 @@
     display: flex; flex-direction: column; justify-content: center;
     transition: transform .12s, box-shadow .12s;
   }
+  .tl-trip { cursor: grab; }
+  .tl-trip:active { cursor: grabbing; }
+  .tl-trip.dragging { opacity: .4; transform: scale(.95); }
   .tl-trip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,.4); z-index: 3; }
+  .tl-track.drag-over { background: rgba(255,107,53,.08); outline: 2px dashed var(--orange); outline-offset: -2px; }
+  .unassigned-trip { cursor: grab; }
+  .unassigned-trip:active { cursor: grabbing; }
+  .unassigned-trip.dragging { opacity: .4; }
+  .drop-ghost {
+    position: absolute; top: 2px; bottom: 2px; border-radius: 6px; z-index: 5;
+    background: rgba(255,107,53,.18); border: 2px dashed var(--orange);
+    pointer-events: none; transition: left .05s, width .05s;
+  }
+  /* Confirm dialog */
+  .confirm-overlay {
+    position: fixed; inset: 0; z-index: 920;
+    background: rgba(6,25,46,.5); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .confirm-box {
+    background: #fff; border-radius: 14px; padding: 24px; max-width: 420px; width: 90%;
+    box-shadow: 0 20px 50px rgba(0,0,0,.3);
+  }
+  .confirm-box h3 { margin: 0 0 8px; font-family: 'Playfair Display', serif; font-size: 20px; color: var(--navy); }
+  .confirm-box p { margin: 0 0 6px; font-size: 13px; color: var(--slate); line-height: 1.5; }
+  .confirm-box .change-highlight { background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: 13px; }
+  .confirm-box .change-highlight strong { color: var(--navy); }
+  .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .confirm-actions button { padding: 9px 18px; border-radius: 8px; font: 600 13px 'Inter',sans-serif; cursor: pointer; border: 0; }
+  .confirm-actions .btn-no { background: var(--cream); color: var(--slate); border: 1px solid var(--line); }
+  .confirm-actions .btn-yes { background: var(--orange); color: #fff; }
   .tl-trip.completed { background: linear-gradient(135deg, var(--ok), #1E7A53); box-shadow: 0 2px 8px rgba(46,158,110,.25); }
   .tl-trip.dispatched { background: linear-gradient(135deg, var(--info), #3572B5); box-shadow: 0 2px 8px rgba(74,144,226,.25); }
   .tl-trip.new { background: linear-gradient(135deg, var(--new), #6B3BA5); box-shadow: 0 2px 8px rgba(155,81,224,.25); }
@@ -2736,8 +2766,12 @@ function renderSchedule() {
     const tripsHtml = trips.map(t => {
       const leftPct = ((t.start - SCHED_START) / SCHED_HOURS) * 100;
       const widthPct = (t.dur / SCHED_HOURS) * 100;
-      const clickEdit = t.apiId ? `onclick="openTripModal(${t.apiId})" style="cursor:pointer; left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;"` : `style="left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;"`;
-      return `<div class="tl-trip ${t.state}" ${clickEdit} title="${t.title} — ${fmtTripTime(t)} (click to edit)">
+      return `<div class="tl-trip ${t.state}" draggable="true"
+        data-trip-id="${t.id}" data-api-id="${t.apiId || ''}" data-driver="${d.name}" data-start="${t.start}" data-dur="${t.dur}" data-title="${t.title}"
+        ondragstart="onTripDragStart(event)" ondragend="onTripDragEnd(event)"
+        ondblclick="${t.apiId ? 'openTripModal('+t.apiId+')' : ''}"
+        style="left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;"
+        title="${t.title} — ${fmtTripTime(t)} (drag to move, double-click to edit)">
         <div class="tt-title">${t.title}</div>
         <div class="tt-meta">${fmtTripTime(t)} • ${t.meta}</div>
       </div>`;
@@ -2768,7 +2802,7 @@ function renderSchedule() {
     const nowHtml = (now >= SCHED_START && now <= SCHED_END) ? `<div class="nowline" style="left:${nowPct}%"></div>` : '';
 
     return `
-      <div class="tl-row">
+      <div class="tl-row" data-driver="${d.name}">
         <div class="tl-driver">
           <div class="tl-driver-av${d.avail ? '' : ' offline'}">${d.ini}</div>
           <div class="tl-driver-main">
@@ -2776,7 +2810,8 @@ function renderSchedule() {
             <div class="tl-driver-sub">${d.van} • ${d.zone}${d.avail ? '' : ' • off today'}</div>
           </div>
         </div>
-        <div class="tl-track">${gapHtml}${nowHtml}${tripsHtml}</div>
+        <div class="tl-track" data-driver="${d.name}"
+          ondragover="onTrackDragOver(event)" ondragleave="onTrackDragLeave(event)" ondrop="onTrackDrop(event)">${gapHtml}${nowHtml}${tripsHtml}</div>
       </div>`;
   }).join('');
 
@@ -2798,9 +2833,12 @@ function renderSchedule() {
     bench.innerHTML = '<div class="bench-empty">✓ Everything is assigned. The AI will flag anything new that needs attention.</div>';
   } else {
     bench.innerHTML = unassigned.map(u => {
-      const editClick = u.apiId ? `onclick="openTripModal(${u.apiId})" style="cursor:pointer;"` : '';
       return `
-      <div class="unassigned-trip" ${editClick} title="Click to edit / assign">
+      <div class="unassigned-trip" draggable="true"
+        data-trip-id="${u.id}" data-api-id="${u.apiId || ''}" data-driver="" data-start="${u.preferredTime}" data-dur="${u.dur}" data-title="${u.title}"
+        ondragstart="onTripDragStart(event)" ondragend="onTripDragEnd(event)"
+        ondblclick="${u.apiId ? 'openTripModal('+u.apiId+')' : ''}"
+        title="Drag to a driver row to assign, or double-click to edit">
         <div class="ut-title">${u.title}</div>
         <div class="ut-meta">${u.meta} • ${Math.round(u.dur*60)} min • preferred ~${fmtTimeHours(u.preferredTime)}</div>
       </div>`;
@@ -3292,6 +3330,209 @@ const driversU = [
     </div>
   `).join('');
 })();
+
+/* =====================================================
+   DRAG & DROP — TIMELINE TRIPS
+   ===================================================== */
+let _dragData = null; // info about the trip being dragged
+
+function onTripDragStart(e) {
+  const el = e.target.closest('[data-trip-id]');
+  if (!el) return;
+  _dragData = {
+    tripId: el.dataset.tripId,
+    apiId: el.dataset.apiId,
+    origDriver: el.dataset.driver,
+    origStart: parseFloat(el.dataset.start),
+    dur: parseFloat(el.dataset.dur),
+    title: el.dataset.title,
+  };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', _dragData.tripId);
+  el.classList.add('dragging');
+}
+
+function onTripDragEnd(e) {
+  const el = e.target.closest('[data-trip-id]');
+  if (el) el.classList.remove('dragging');
+  // Remove all drag-over highlights and ghosts
+  document.querySelectorAll('.tl-track.drag-over').forEach(t => t.classList.remove('drag-over'));
+  document.querySelectorAll('.drop-ghost').forEach(g => g.remove());
+  _dragData = null;
+}
+
+function onTrackDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const track = e.currentTarget;
+  track.classList.add('drag-over');
+
+  // Show ghost preview at cursor position
+  let ghost = track.querySelector('.drop-ghost');
+  if (!ghost) {
+    ghost = document.createElement('div');
+    ghost.className = 'drop-ghost';
+    track.appendChild(ghost);
+  }
+  if (_dragData) {
+    const rect = track.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = x / rect.width;
+    const widthPct = (_dragData.dur / SCHED_HOURS) * 100;
+    ghost.style.left = Math.max(0, pct * 100 - widthPct / 2) + '%';
+    ghost.style.width = widthPct + '%';
+  }
+}
+
+function onTrackDragLeave(e) {
+  const track = e.currentTarget;
+  // Only remove if actually leaving the track (not entering a child)
+  if (!track.contains(e.relatedTarget)) {
+    track.classList.remove('drag-over');
+    const ghost = track.querySelector('.drop-ghost');
+    if (ghost) ghost.remove();
+  }
+}
+
+function onTrackDrop(e) {
+  e.preventDefault();
+  const track = e.currentTarget;
+  track.classList.remove('drag-over');
+  const ghost = track.querySelector('.drop-ghost');
+  if (ghost) ghost.remove();
+
+  if (!_dragData) return;
+
+  const newDriver = track.dataset.driver;
+
+  // Calculate new start time from drop X position
+  const rect = track.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const pct = x / rect.width;
+  let newStartRaw = SCHED_START + pct * SCHED_HOURS - _dragData.dur / 2;
+  // Snap to nearest 15 minutes (0.25 hours)
+  newStartRaw = Math.round(newStartRaw * 4) / 4;
+  newStartRaw = Math.max(SCHED_START, Math.min(newStartRaw, SCHED_END - _dragData.dur));
+
+  const driverChanged = newDriver !== _dragData.origDriver;
+  const timeChanged = Math.abs(newStartRaw - _dragData.origStart) > 0.1;
+
+  if (!driverChanged && !timeChanged) return; // no change
+
+  // Build change summary
+  const changes = [];
+  if (driverChanged) changes.push({ label: 'Driver', from: _dragData.origDriver || 'Unassigned', to: newDriver });
+  if (timeChanged) changes.push({ label: 'Time', from: fmtTimeHours(_dragData.origStart), to: fmtTimeHours(newStartRaw) });
+
+  // If time changed, always confirm. If only driver changed, confirm too.
+  showDragConfirm(_dragData, newDriver, newStartRaw, changes, driverChanged, timeChanged);
+}
+
+function showDragConfirm(dragInfo, newDriver, newStart, changes, driverChanged, timeChanged) {
+  // Build the confirm dialog
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+
+  const changesHtml = changes.map(c =>
+    `<div style="display:flex;justify-content:space-between;padding:4px 0;">
+      <span style="font-weight:600;color:var(--slate);">${c.label}:</span>
+      <span><span style="text-decoration:line-through;color:var(--muted);">${c.from}</span> → <strong style="color:var(--orange);">${c.to}</strong></span>
+    </div>`
+  ).join('');
+
+  const warningNote = timeChanged
+    ? '<p style="color:var(--warn);font-weight:600;margin-top:8px;">⚠ This will change the pickup time for this trip.</p>'
+    : '';
+
+  overlay.innerHTML = `
+    <div class="confirm-box">
+      <h3>Move Trip?</h3>
+      <p><strong>${dragInfo.title}</strong></p>
+      <div class="change-highlight">${changesHtml}</div>
+      ${warningNote}
+      <div class="confirm-actions">
+        <button class="btn-no" id="dragConfirmNo">Cancel</button>
+        <button class="btn-yes" id="dragConfirmYes">${timeChanged ? 'Confirm Time Change' : 'Move Trip'}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById('dragConfirmNo').onclick = () => overlay.remove();
+  document.getElementById('dragConfirmYes').onclick = async () => {
+    overlay.remove();
+    await executeTripMove(dragInfo, newDriver, newStart, driverChanged, timeChanged);
+  };
+  // Close on backdrop click
+  overlay.addEventListener('click', (ev) => { if (ev.target === overlay) overlay.remove(); });
+}
+
+async function executeTripMove(dragInfo, newDriver, newStart, driverChanged, timeChanged) {
+  const tripId = dragInfo.tripId;
+  const apiId = dragInfo.apiId;
+
+  // Update client-side state immediately for responsiveness
+  // Find trip in schedTrips or unassigned
+  let trip = schedTrips.find(t => t.id === tripId);
+  const wasUnassigned = !trip;
+  if (wasUnassigned) {
+    const uIdx = unassigned.findIndex(u => u.id === tripId);
+    if (uIdx >= 0) {
+      const u = unassigned.splice(uIdx, 1)[0];
+      trip = {
+        id: u.id, apiId: u.apiId, title: u.title, meta: u.meta,
+        driver: newDriver, start: newStart, dur: u.dur, state: 'new',
+      };
+      schedTrips.push(trip);
+    }
+  } else {
+    if (driverChanged) trip.driver = newDriver;
+    if (timeChanged) trip.start = newStart;
+  }
+
+  renderSchedule();
+  computeNextAvailable();
+
+  // Persist to API
+  if (apiId) {
+    try {
+      // If driver changed, find the driver_id
+      if (driverChanged) {
+        const driverObj = _apiDrivers.find(d => d.name === newDriver);
+        if (driverObj) {
+          await fetch(`/api/trips/${apiId}/assign`, {
+            method: 'PATCH', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ driver_id: driverObj.id }),
+          });
+        }
+      }
+      // If time changed, update the trip's start_time
+      if (timeChanged) {
+        const dateStr = schedDate.toISOString().slice(0, 10);
+        const hr = Math.floor(newStart);
+        const min = Math.round((newStart - hr) * 60);
+        const newTimeStr = `${dateStr}T${String(hr).padStart(2,'0')}:${String(min).padStart(2,'0')}:00`;
+        await fetch(`/api/trips/${apiId}`, {
+          method: 'PATCH', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ start_time: newTimeStr }),
+        });
+      }
+      const moveDesc = [];
+      if (driverChanged) moveDesc.push(`→ ${newDriver}`);
+      if (timeChanged) moveDesc.push(`@ ${fmtTimeHours(newStart)}`);
+      showToast('Trip moved', `${dragInfo.title} ${moveDesc.join(' ')}`);
+      pushActivity(`Moved ${dragInfo.title} ${moveDesc.join(' ')}`);
+    } catch(e) {
+      console.error('Failed to persist trip move:', e);
+      showToast('Move failed', 'Could not save to server. Try again.');
+      await refreshScheduleFromAPI();
+    }
+  } else {
+    showToast('Trip moved (local)', `${dragInfo.title} → ${newDriver}`);
+    pushActivity(`Moved ${dragInfo.title} → ${newDriver}`);
+  }
+}
 
 /* =====================================================
    ROUTES MAP — Leaflet + El Paso
