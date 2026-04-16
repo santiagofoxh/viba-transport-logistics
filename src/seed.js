@@ -4,7 +4,14 @@ const { db } = require('./db');
 
 function seedIfEmpty() {
   const { n } = db.prepare('SELECT COUNT(*) AS n FROM users').get();
-  if (n > 0) { console.log('[seed] users already exist, skipping seed'); return; }
+  if (n > 0) {
+    console.log('[seed] users already exist, skipping seed');
+    // Ensure Daniel exists even on existing DBs
+    ensureDaniel();
+    // Ensure drivers are up to date
+    ensureDriverNames();
+    return;
+  }
 
   console.log('[seed] Seeding demo data…');
 
@@ -15,8 +22,10 @@ function seedIfEmpty() {
   // Real accounts — passwords pulled from env vars if present, else inline.
   const ownerPw = process.env.OWNER_PASSWORD || '1234567890';
   const dispatchPw = process.env.DISPATCH_PASSWORD || 'MaribelDispatch';
+  const danielPw = process.env.DANIEL_PASSWORD || 'Daniel5550';
   const ownerHash = bcrypt.hashSync(ownerPw, 10);
   const dispatchHash = bcrypt.hashSync(dispatchPw, 10);
+  const danielHash = bcrypt.hashSync(danielPw, 10);
 
   const insertUser = db.prepare(`
     INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)
@@ -25,17 +34,20 @@ function seedIfEmpty() {
   insertUser.run('rwallace', 'R. Wallace', ownerHash, 'owner');
   // Dispatch operator — limited to dispatch operations
   insertUser.run('maribel', 'Maribel', dispatchHash, 'operator');
+  // Scheduler — sees schedule + map only
+  insertUser.run('daniel', 'Daniel', danielHash, 'scheduler');
   // Drivers (demo)
-  insertUser.run('driver1@viba.test', 'M. Ramirez', fallbackHash, 'driver');
-  insertUser.run('driver2@viba.test', 'J. Soto', fallbackHash, 'driver');
+  insertUser.run('driver1@viba.test', 'Jesus', fallbackHash, 'driver');
+  insertUser.run('driver2@viba.test', 'Lencho', fallbackHash, 'driver');
+  insertUser.run('driver3@viba.test', 'Perla', fallbackHash, 'driver');
 
   const insertDriver = db.prepare(`
     INSERT INTO drivers (name, van, zone, phone, available) VALUES (?, ?, ?, ?, 1)
   `);
-  // Viba Transport currently has 3 drivers on staff.
-  const dMR = insertDriver.run('M. Ramirez', 'Van 07', 'Central',   '915-555-0701').lastInsertRowid;
-  const dJS = insertDriver.run('J. Soto',    'Van 03', 'Westside',  '915-555-0703').lastInsertRowid;
-  const dLC = insertDriver.run('L. Chavez',  'Van 11', 'Northeast', '915-555-0711').lastInsertRowid;
+  // Viba Transport's 3 drivers.
+  const dJesus  = insertDriver.run('Jesus',  'Van 07', 'Central',   '915-555-0701').lastInsertRowid;
+  const dLencho = insertDriver.run('Lencho', 'Van 03', 'Westside',  '915-555-0703').lastInsertRowid;
+  const dPerla  = insertDriver.run('Perla',  'Van 11', 'Northeast', '915-555-0711').lastInsertRowid;
 
   const today = new Date().toISOString().slice(0, 10);
   const t = (h, m) => `${today}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
@@ -46,14 +58,14 @@ function seedIfEmpty() {
   `);
 
   // scheduled trips
-  insertTrip.run('Mr. Delgado', '915-555-0201', 'Del Sol Medical', 'Home — Dyer St',   t(7, 30), 45, '', dJS, 'completed');
-  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Zaragoza',        'Providence Hosp.', t(8, 20), 50, '', dMR, 'en_route');
-  insertTrip.run('Mrs. Reyes',  '915-555-0317', 'Sunrise Senior',  'Providence Clinic', t(8, 40), 40, '', dLC, 'dispatched');
-  insertTrip.run('Mr. Herrera', '915-555-0203', 'Album Ave',       'UMC Dialysis',      t(9, 20), 55, '', dJS, 'dispatched');
-  insertTrip.run('Mrs. Alvarez','915-555-0149', '4200 Mesa St',    'Las Palmas Medical',t(9, 50), 60, 'Wheelchair van', dMR, 'new');
-  insertTrip.run('Mrs. Reyes',  '915-555-0317', 'Providence Clinic','Sunrise Senior',   t(10,45), 40, '', dLC, 'new');
-  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Providence Hosp.','Zaragoza',          t(13, 0), 50, '', dLC, 'new');
-  insertTrip.run('Mrs. Garcia', '915-555-0411', 'Montana Ave',     'VA Clinic El Paso', t(16, 0), 60, '', dMR, 'new');
+  insertTrip.run('Mr. Delgado', '915-555-0201', 'Del Sol Medical', 'Home — Dyer St',   t(7, 30), 45, '', dLencho, 'completed');
+  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Zaragoza',        'Providence Hosp.', t(8, 20), 50, '', dJesus, 'en_route');
+  insertTrip.run('Mrs. Reyes',  '915-555-0317', 'Sunrise Senior',  'Providence Clinic', t(8, 40), 40, '', dPerla, 'dispatched');
+  insertTrip.run('Mr. Herrera', '915-555-0203', 'Album Ave',       'UMC Dialysis',      t(9, 20), 55, '', dLencho, 'dispatched');
+  insertTrip.run('Mrs. Alvarez','915-555-0149', '4200 Mesa St',    'Las Palmas Medical',t(9, 50), 60, 'Wheelchair van', dJesus, 'new');
+  insertTrip.run('Mrs. Reyes',  '915-555-0317', 'Providence Clinic','Sunrise Senior',   t(10,45), 40, '', dPerla, 'new');
+  insertTrip.run('Mr. Ortega',  '915-555-0248', 'Providence Hosp.','Zaragoza',          t(13, 0), 50, '', dPerla, 'new');
+  insertTrip.run('Mrs. Garcia', '915-555-0411', 'Montana Ave',     'VA Clinic El Paso', t(16, 0), 60, '', dJesus, 'new');
 
   // unassigned (driver_id NULL) — candidates for AI optimize
   insertTrip.run('Mrs. Jimenez','915-555-0501', 'Cotton St',       'El Paso Cardiology', t(10,30), 45, '', null, 'new');
@@ -73,7 +85,45 @@ function seedIfEmpty() {
   }
 
   console.log('[seed] Done.');
-  console.log(`[seed] Owner: rwallace   Dispatch operator: maribel`);
+  console.log(`[seed] Owner: rwallace   Dispatch: maribel   Scheduler: daniel`);
+}
+
+// Ensure Daniel user exists on DBs that were seeded before this update.
+function ensureDaniel() {
+  const exists = db.prepare("SELECT id FROM users WHERE email = 'daniel'").get();
+  if (!exists) {
+    const danielPw = process.env.DANIEL_PASSWORD || 'Daniel5550';
+    const hash = bcrypt.hashSync(danielPw, 10);
+    try {
+      db.prepare("INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)").run('daniel', 'Daniel', hash, 'scheduler');
+      console.log('[seed] Created Daniel (scheduler)');
+    } catch (e) { console.warn('[seed] Could not create Daniel:', e.message); }
+  }
+}
+
+// Rename old drivers to the real names (Jesus, Lencho, Perla).
+function ensureDriverNames() {
+  const renames = [
+    { old: 'M. Ramirez', newName: 'Jesus',  van: 'Van 07' },
+    { old: 'J. Soto',    newName: 'Lencho', van: 'Van 03' },
+    { old: 'L. Chavez',  newName: 'Perla',  van: 'Van 11' },
+  ];
+  for (const r of renames) {
+    const d = db.prepare("SELECT id FROM drivers WHERE name = ?").get(r.old);
+    if (d) {
+      db.prepare("UPDATE drivers SET name = ? WHERE id = ?").run(r.newName, d.id);
+      console.log(`[seed] Renamed driver "${r.old}" → "${r.newName}"`);
+    }
+  }
+  // Also rename matching user records
+  const userRenames = [
+    { old: 'M. Ramirez', newName: 'Jesus' },
+    { old: 'J. Soto',    newName: 'Lencho' },
+    { old: 'L. Chavez',  newName: 'Perla' },
+  ];
+  for (const r of userRenames) {
+    db.prepare("UPDATE users SET name = ? WHERE name = ?").run(r.newName, r.old);
+  }
 }
 
 module.exports = { seedIfEmpty };

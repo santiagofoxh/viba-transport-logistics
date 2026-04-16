@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
     --navy: #0A2540;
@@ -1116,6 +1118,7 @@
       <button class="tab active" onclick="showView('live', this)">Live Drivers</button>
       <button class="tab" onclick="showView('console', this)">Operator Console</button>
       <button class="tab" onclick="showView('schedule', this)">Schedule</button>
+      <button class="tab" onclick="showView('map', this)">Routes Map</button>
       <button class="tab" onclick="showView('kpi', this)">Owner Dashboard</button>
     </div>
     <div class="op-info">
@@ -1152,6 +1155,21 @@
       const kpi = document.getElementById('view-kpi');
       if (kpi) kpi.setAttribute('data-owner-only', 'true');
     }
+
+    // Scheduler role: only sees Schedule + Routes Map
+    if (me.role === 'scheduler') {
+      const allowedTabs = ['Schedule', 'Routes Map'];
+      document.querySelectorAll('.nav-tabs .tab').forEach(t => {
+        if (!allowedTabs.includes(t.textContent.trim())) t.style.display = 'none';
+      });
+      // Default to Schedule view for scheduler
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-schedule').classList.add('active');
+      document.querySelectorAll('.nav-tabs .tab').forEach(t => {
+        t.classList.remove('active');
+        if (t.textContent.trim() === 'Schedule') t.classList.add('active');
+      });
+    }
   } catch (e) { window.location.href = '/login'; }
 })();
 
@@ -1176,9 +1194,9 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
       </div>
       <div class="hero-visual">
         <div class="mini-dash-title"><span><span class="live-dot"></span>OPERATOR — MARIA G.</span><span id="heroClock">—</span></div>
-        <div class="mini-row"><div><div class="id">TASK #0421</div><div class="where">Dispatch Alvarez trip to Ramirez</div></div><span class="pill warn">New</span></div>
+        <div class="mini-row"><div><div class="id">TASK #0421</div><div class="where">Dispatch Alvarez trip to Jesus</div></div><span class="pill warn">New</span></div>
         <div class="mini-row"><div><div class="id">TASK #0420</div><div class="where">Confirm pickup — Herrera / Soto</div></div><span class="pill info">In progress</span></div>
-        <div class="mini-row"><div><div class="id">TASK #0419</div><div class="where">Driver arrived — Reyes / Chavez</div></div><span class="pill ok">Done</span></div>
+        <div class="mini-row"><div><div class="id">TASK #0419</div><div class="where">Driver arrived — Reyes / Perla</div></div><span class="pill ok">Done</span></div>
         <div class="mini-row"><div><div class="id">CALL #0036</div><div class="where">Incoming — Mrs. Vargas</div></div><span class="pill warn">Live</span></div>
       </div>
     </div>
@@ -1317,7 +1335,7 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
         </div>
         <div class="ns-text">
           <div class="ns-label">Next available slot</div>
-          <div class="ns-value"><strong id="nsDriver">L. Chavez</strong> &nbsp;•&nbsp; <span id="nsTime">11:15 AM</span> &nbsp;•&nbsp; <span id="nsZone">Northeast</span></div>
+          <div class="ns-value"><strong id="nsDriver">Perla</strong> &nbsp;•&nbsp; <span id="nsTime">11:15 AM</span> &nbsp;•&nbsp; <span id="nsZone">Northeast</span></div>
         </div>
       </div>
       <div class="shift-pill"><span class="live-dot"></span> Shift: 07:00 – 15:00 &nbsp;•&nbsp; <span id="opClock">—</span></div>
@@ -1590,6 +1608,23 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
   </div>
 </section>
 
+<!-- ============ ROUTES MAP ============ -->
+<section id="view-map" class="view">
+  <div style="max-width:1440px; margin:0 auto; padding:20px 24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h1 style="font-family:'Playfair Display',serif; font-size:28px; margin:0;">Routes Map</h1>
+        <div style="font-size:13px; color:var(--slate); margin-top:4px;">Visualize today's trips across El Paso. Each driver has a unique color.</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div id="mapLegend" style="display:flex; gap:14px; font-size:12px; font-weight:600;"></div>
+        <button onclick="refreshMap()" style="background:var(--orange);color:#fff;border:0;padding:9px 16px;border-radius:8px;font:600 12px 'Inter',sans-serif;cursor:pointer;">Refresh Map</button>
+      </div>
+    </div>
+    <div id="routeMap" style="width:100%; height:calc(100vh - 160px); min-height:500px; border-radius:12px; overflow:hidden; border:1px solid var(--line); box-shadow:0 4px 16px rgba(0,0,0,.08);"></div>
+  </div>
+</section>
+
 <!-- ============ DRIVER MODAL ============ -->
 <div class="modal-backdrop" id="driverBackdrop" onclick="closeDriverModal()"></div>
 <div class="modal" id="driverModal">
@@ -1768,12 +1803,12 @@ const STATES = {
 };
 
 let tasks = [
-  { id: 'T-0421', aiTask: 'Communicate route to Ramirez — pickup Mrs. Alvarez (4200 Mesa St) for 9:50 AM trip to Las Palmas Medical', cust: 'Mrs. Alvarez', from: '4200 Mesa St', to: 'Las Palmas Medical', driver: 'M. Ramirez', appt: '10:30 AM', state: 'new', log: [{ t: '07:42', by: 'AI', text: 'Call booked — new task created' }], expanded: false },
-  { id: 'T-0420', aiTask: 'Dispatch Mr. Herrera trip to Soto — pickup from 2318 Album Ave at 9:30 AM to UMC Dialysis', cust: 'Mr. Herrera', from: 'Album Ave', to: 'UMC Dialysis', driver: 'J. Soto', appt: '10:00 AM', state: 'dispatched', log: [{ t: '07:15', by: 'AI', text: 'Call booked' }, { t: '07:38', by: 'Maria G.', text: 'Dispatched to J. Soto — Van 03' }], expanded: false },
-  { id: 'T-0419', aiTask: 'Reyes trip — Chavez just pulled into Sunrise Senior Living, confirm pickup', cust: 'Mrs. Reyes', from: 'Sunrise Senior Living', to: 'Providence Clinic', driver: 'L. Chavez', appt: '9:15 AM', state: 'arrived_pickup', log: [{ t: '06:55', by: 'AI', text: 'Call booked' }, { t: '07:10', by: 'Maria G.', text: 'Dispatched to L. Chavez' }, { t: '08:42', by: 'Driver', text: 'Pulled into Sunrise — waiting' }], expanded: false },
-  { id: 'T-0418', aiTask: 'Ortega trip — Ramirez is en route to Hospitals of Providence, ETA 12 min', cust: 'Mr. Ortega', from: 'Zaragoza', to: 'Hospitals of Providence', driver: 'M. Ramirez', appt: '9:00 AM', state: 'en_route', log: [{ t: '06:30', by: 'AI', text: 'Call booked' }, { t: '07:00', by: 'Maria G.', text: 'Dispatched to M. Ramirez' }, { t: '08:20', by: 'Driver', text: 'Arrived at pickup' }, { t: '08:28', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
+  { id: 'T-0421', aiTask: 'Communicate route to Jesus — pickup Mrs. Alvarez (4200 Mesa St) for 9:50 AM trip to Las Palmas Medical', cust: 'Mrs. Alvarez', from: '4200 Mesa St', to: 'Las Palmas Medical', driver: 'Jesus', appt: '10:30 AM', state: 'new', log: [{ t: '07:42', by: 'AI', text: 'Call booked — new task created' }], expanded: false },
+  { id: 'T-0420', aiTask: 'Dispatch Mr. Herrera trip to Lencho — pickup from 2318 Album Ave at 9:30 AM to UMC Dialysis', cust: 'Mr. Herrera', from: 'Album Ave', to: 'UMC Dialysis', driver: 'Lencho', appt: '10:00 AM', state: 'dispatched', log: [{ t: '07:15', by: 'AI', text: 'Call booked' }, { t: '07:38', by: 'Maria G.', text: 'Dispatched to Lencho — Van 03' }], expanded: false },
+  { id: 'T-0419', aiTask: 'Reyes trip — Perla just pulled into Sunrise Senior Living, confirm pickup', cust: 'Mrs. Reyes', from: 'Sunrise Senior Living', to: 'Providence Clinic', driver: 'Perla', appt: '9:15 AM', state: 'arrived_pickup', log: [{ t: '06:55', by: 'AI', text: 'Call booked' }, { t: '07:10', by: 'Maria G.', text: 'Dispatched to Perla' }, { t: '08:42', by: 'Driver', text: 'Pulled into Sunrise — waiting' }], expanded: false },
+  { id: 'T-0418', aiTask: 'Ortega trip — Jesus is en route to Hospitals of Providence, ETA 12 min', cust: 'Mr. Ortega', from: 'Zaragoza', to: 'Hospitals of Providence', driver: 'Jesus', appt: '9:00 AM', state: 'en_route', log: [{ t: '06:30', by: 'AI', text: 'Call booked' }, { t: '07:00', by: 'Maria G.', text: 'Dispatched to Jesus' }, { t: '08:20', by: 'Driver', text: 'Arrived at pickup' }, { t: '08:28', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
   { id: 'T-0417', aiTask: 'Garcia trip — scheduled for 4:15 PM, needs driver assignment by 3:30 PM', cust: 'Mrs. Garcia', from: 'Montana Ave', to: 'VA Clinic El Paso', driver: '—', appt: '4:30 PM', state: 'new', log: [{ t: '06:10', by: 'AI', text: 'Call booked — schedule for later today' }], expanded: false },
-  { id: 'T-0416', aiTask: 'Delgado trip completed — Soto dropped off client at home, awaiting close-out', cust: 'Mr. Delgado', from: 'Del Sol Medical', to: 'Home — Dyer St', driver: 'J. Soto', appt: '8:00 AM', state: 'en_route', log: [{ t: '05:30', by: 'AI', text: 'Call booked' }, { t: '05:45', by: 'Maria G.', text: 'Dispatched to J. Soto' }, { t: '07:55', by: 'Driver', text: 'Arrived at Del Sol' }, { t: '08:05', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
+  { id: 'T-0416', aiTask: 'Delgado trip completed — Lencho dropped off client at home, awaiting close-out', cust: 'Mr. Delgado', from: 'Del Sol Medical', to: 'Home — Dyer St', driver: 'Lencho', appt: '8:00 AM', state: 'en_route', log: [{ t: '05:30', by: 'AI', text: 'Call booked' }, { t: '05:45', by: 'Maria G.', text: 'Dispatched to Lencho' }, { t: '07:55', by: 'Driver', text: 'Arrived at Del Sol' }, { t: '08:05', by: 'Maria G.', text: 'Client on board — en route' }], expanded: false },
 ];
 
 let filter = 'all';
@@ -1887,9 +1922,9 @@ function advanceTask(id) {
    CURRENT task for that driver to the next state.
    ===================================================== */
 const LIVE_DRIVERS = [
-  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central' },
-  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside' },
-  { ini: 'LC', name: 'L. Chavez',  van: 'Van 11', zone: 'Northeast' },
+  { ini: 'JE', name: 'Jesus', van: 'Van 07', zone: 'Central' },
+  { ini: 'LE', name: 'Lencho',    van: 'Van 03', zone: 'Westside' },
+  { ini: 'PE', name: 'Perla',  van: 'Van 11', zone: 'Northeast' },
 ];
 
 function liveTasksFor(driverName) {
@@ -2396,9 +2431,9 @@ function renderActivity() {
 
 /* ========== DRIVERS ========== */
 const drivers = [
-  { ini: 'MR', name: 'M. Ramirez', sub: 'Van 07 • 8h today', status: 'En route', cls: 'ok' },
-  { ini: 'JS', name: 'J. Soto',    sub: 'Van 03 • 6h today', status: 'En route', cls: 'ok' },
-  { ini: 'LC', name: 'L. Chavez',  sub: 'Van 11 • 7h today', status: 'At pickup', cls: 'warn' },
+  { ini: 'JE', name: 'Jesus', sub: 'Van 07 • 8h today', status: 'En route', cls: 'ok' },
+  { ini: 'LE', name: 'Lencho',    sub: 'Van 03 • 6h today', status: 'En route', cls: 'ok' },
+  { ini: 'PE', name: 'Perla',  sub: 'Van 11 • 7h today', status: 'At pickup', cls: 'warn' },
 ];
 function renderDrivers() {
   const el = document.getElementById('driverList');
@@ -2625,22 +2660,22 @@ const SCHED_END = 21;    // 21:00 (14 hours)
 const SCHED_HOURS = SCHED_END - SCHED_START;
 
 const schedDrivers = [
-  { ini: 'MR', name: 'M. Ramirez', van: 'Van 07', zone: 'Central',   avail: true },
-  { ini: 'JS', name: 'J. Soto',    van: 'Van 03', zone: 'Westside',  avail: true },
-  { ini: 'LC', name: 'L. Chavez',  van: 'Van 11', zone: 'Northeast', avail: true },
+  { ini: 'JE', name: 'Jesus', van: 'Van 07', zone: 'Central',   avail: true },
+  { ini: 'LE', name: 'Lencho',    van: 'Van 03', zone: 'Westside',  avail: true },
+  { ini: 'PE', name: 'Perla',  van: 'Van 11', zone: 'Northeast', avail: true },
 ];
 
 // today's trips (start in decimal hours, duration in hours)
 let schedTrips = [
-  { id: 'S-001', title: 'Delgado → Home',         meta: 'Del Sol → Dyer St',       driver: 'J. Soto',     start: 7.5,  dur: 0.75, state: 'completed' },
-  { id: 'S-002', title: 'Ortega pickup',          meta: 'Zaragoza → Providence',   driver: 'M. Ramirez',  start: 8.3,  dur: 0.85, state: 'en_route' },
-  { id: 'S-003', title: 'Reyes pickup',           meta: 'Sunrise → Providence',    driver: 'L. Chavez',   start: 8.7,  dur: 0.7,  state: 'dispatched' },
-  { id: 'S-004', title: 'Herrera → UMC',          meta: 'Album Ave → UMC Dialysis', driver: 'J. Soto',    start: 9.3,  dur: 0.9,  state: 'dispatched' },
-  { id: 'S-005', title: 'Alvarez → Las Palmas',   meta: 'Mesa St → Las Palmas',    driver: 'M. Ramirez',  start: 9.8,  dur: 1.0,  state: 'new' },
-  { id: 'S-006', title: 'Reyes return home',      meta: 'Providence → Sunrise',    driver: 'L. Chavez',   start: 10.8, dur: 0.65, state: 'new' },
-  { id: 'S-007', title: 'Alvarez return',         meta: 'Las Palmas → Mesa St',    driver: 'M. Ramirez',  start: 11.5, dur: 0.85, state: 'new' },
-  { id: 'S-008', title: 'Ortega return',          meta: 'Providence → Zaragoza',   driver: 'L. Chavez',   start: 13.0, dur: 0.85, state: 'new' },
-  { id: 'S-009', title: 'Garcia → VA Clinic',     meta: 'Montana Ave → VA Clinic', driver: 'M. Ramirez',  start: 16.0, dur: 1.0,  state: 'new' },
+  { id: 'S-001', title: 'Delgado → Home',         meta: 'Del Sol → Dyer St',       driver: 'Lencho',     start: 7.5,  dur: 0.75, state: 'completed' },
+  { id: 'S-002', title: 'Ortega pickup',          meta: 'Zaragoza → Providence',   driver: 'Jesus',  start: 8.3,  dur: 0.85, state: 'en_route' },
+  { id: 'S-003', title: 'Reyes pickup',           meta: 'Sunrise → Providence',    driver: 'Perla',   start: 8.7,  dur: 0.7,  state: 'dispatched' },
+  { id: 'S-004', title: 'Herrera → UMC',          meta: 'Album Ave → UMC Dialysis', driver: 'Lencho',    start: 9.3,  dur: 0.9,  state: 'dispatched' },
+  { id: 'S-005', title: 'Alvarez → Las Palmas',   meta: 'Mesa St → Las Palmas',    driver: 'Jesus',  start: 9.8,  dur: 1.0,  state: 'new' },
+  { id: 'S-006', title: 'Reyes return home',      meta: 'Providence → Sunrise',    driver: 'Perla',   start: 10.8, dur: 0.65, state: 'new' },
+  { id: 'S-007', title: 'Alvarez return',         meta: 'Las Palmas → Mesa St',    driver: 'Jesus',  start: 11.5, dur: 0.85, state: 'new' },
+  { id: 'S-008', title: 'Ortega return',          meta: 'Providence → Zaragoza',   driver: 'Perla',   start: 13.0, dur: 0.85, state: 'new' },
+  { id: 'S-009', title: 'Garcia → VA Clinic',     meta: 'Montana Ave → VA Clinic', driver: 'Jesus',  start: 16.0, dur: 1.0,  state: 'new' },
 ];
 
 // unassigned pool — these appear in the bench bar until optimized/assigned
@@ -2789,7 +2824,7 @@ function nowHoursDecimal() {
 }
 
 /* ===== NEXT AVAILABLE SLOT calc ===== */
-let nextAvailableGlobal = { driver: 'L. Chavez', hour: 11.25, zone: 'Northeast' };
+let nextAvailableGlobal = { driver: 'Perla', hour: 11.25, zone: 'Northeast' };
 
 function computeNextAvailable() {
   const now = nowHoursDecimal();
@@ -2925,9 +2960,9 @@ const EL_PASO_ZONES = [
 
 // Driver zone coverage — starts with home zone from driver list.
 const driverZones = {
-  'M. Ramirez': ['Central', 'Downtown'],
-  'J. Soto':    ['Westside', 'Lower Valley'],
-  'L. Chavez':  ['Northeast', 'East', 'Far East'],
+  'Jesus': ['Central', 'Downtown'],
+  'Lencho':    ['Westside', 'Lower Valley'],
+  'Perla':  ['Northeast', 'East', 'Far East'],
 };
 
 // Infer zone from an address string using keyword matches for El Paso.
@@ -2957,9 +2992,9 @@ function renderZonePanel() {
   const body = document.getElementById('zoneBody');
   if (!body) return;
   const drivers = [
-    { ini: 'MR', name: 'M. Ramirez', van: 'Van 07' },
-    { ini: 'JS', name: 'J. Soto',    van: 'Van 03' },
-    { ini: 'LC', name: 'L. Chavez',  van: 'Van 11' },
+    { ini: 'JE', name: 'Jesus', van: 'Van 07' },
+    { ini: 'LE', name: 'Lencho',    van: 'Van 03' },
+    { ini: 'PE', name: 'Perla',  van: 'Van 11' },
   ];
   let html = drivers.map(d => {
     const assigned = driverZones[d.name] || [];
@@ -3238,9 +3273,9 @@ setInterval(() => {
 }, 30000);
 
 const driversU = [
-  { name: 'M. Ramirez', util: 92 },
-  { name: 'J. Soto',    util: 87 },
-  { name: 'L. Chavez',  util: 81 },
+  { name: 'Jesus',  util: 92 },
+  { name: 'Lencho', util: 87 },
+  { name: 'Perla',  util: 81 },
 ];
 (function(){
   const el = document.getElementById('drivUtil');
@@ -3257,6 +3292,202 @@ const driversU = [
     </div>
   `).join('');
 })();
+
+/* =====================================================
+   ROUTES MAP — Leaflet + El Paso
+   ===================================================== */
+// Known El Paso locations → approximate lat/lng.
+const EP_LOCATIONS = {
+  'del sol medical':     [31.7650, -106.3050],
+  'del sol':             [31.7650, -106.3050],
+  'del sol dialysis':    [31.7630, -106.3060],
+  'dyer st':             [31.8360, -106.4370],
+  'home — dyer st':      [31.8360, -106.4370],
+  'zaragoza':            [31.7650, -106.3290],
+  'providence hosp':     [31.7710, -106.4150],
+  'providence hosp.':    [31.7710, -106.4150],
+  'providence clinic':   [31.7700, -106.4130],
+  'sunrise senior':      [31.8300, -106.4300],
+  'sunrise senior living':[31.8300, -106.4300],
+  'album ave':           [31.7200, -106.3600],
+  'umc dialysis':        [31.8100, -106.4230],
+  'umc':                 [31.8100, -106.4230],
+  '4200 mesa st':        [31.7800, -106.5000],
+  'mesa st':             [31.7800, -106.5000],
+  'las palmas medical':  [31.7770, -106.5050],
+  'las palmas':          [31.7770, -106.5050],
+  'las palmas imaging':  [31.7755, -106.5040],
+  'montana ave':         [31.7720, -106.4850],
+  'va clinic el paso':   [31.7900, -106.4610],
+  'va clinic':           [31.7900, -106.4610],
+  'cotton st':           [31.7600, -106.4890],
+  'el paso cardiology':  [31.7750, -106.4200],
+  'yarbrough':           [31.7700, -106.3500],
+  'sierra medical':      [31.7680, -106.3300],
+  'lee trevino':         [31.7750, -106.3400],
+  'stanton st':          [31.7590, -106.4870],
+  '5410 stanton st':     [31.7600, -106.4880],
+  'hondo pass':          [31.8450, -106.4350],
+  'fred wilson':         [31.8380, -106.4180],
+  'mission':             [31.7050, -106.3200],
+  'socorro':             [31.6550, -106.3050],
+  'alameda':             [31.7250, -106.3500],
+  'sunland park':        [31.7950, -106.5700],
+};
+
+// Fallback: center of El Paso
+const EP_CENTER = [31.7619, -106.4850];
+
+function geocodeLocal(addr) {
+  if (!addr) return null;
+  const s = addr.toLowerCase().trim();
+  // Exact match first
+  if (EP_LOCATIONS[s]) return EP_LOCATIONS[s];
+  // Partial match
+  for (const [key, coords] of Object.entries(EP_LOCATIONS)) {
+    if (s.includes(key) || key.includes(s)) return coords;
+  }
+  // Try first word
+  for (const [key, coords] of Object.entries(EP_LOCATIONS)) {
+    const firstWord = s.split(/[\s,→—-]+/)[0];
+    if (firstWord.length > 3 && key.includes(firstWord)) return coords;
+  }
+  return null;
+}
+
+// Driver colors — visually distinct
+const DRIVER_COLORS = {};
+const COLOR_PALETTE = ['#FF6B35', '#4A90E2', '#2E9E6E', '#9B51E0', '#D25B4B', '#F5A623', '#00BCD4', '#E91E63'];
+let _colorIdx = 0;
+function driverColor(name) {
+  if (!DRIVER_COLORS[name]) {
+    DRIVER_COLORS[name] = COLOR_PALETTE[_colorIdx % COLOR_PALETTE.length];
+    _colorIdx++;
+  }
+  return DRIVER_COLORS[name];
+}
+
+let _mapInstance = null;
+let _mapLayers = [];
+
+function initMap() {
+  if (_mapInstance) return;
+  const el = document.getElementById('routeMap');
+  if (!el || typeof L === 'undefined') return;
+  _mapInstance = L.map('routeMap').setView(EP_CENTER, 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(_mapInstance);
+}
+
+function refreshMap() {
+  initMap();
+  if (!_mapInstance) return;
+
+  // Clear old layers
+  _mapLayers.forEach(l => _mapInstance.removeLayer(l));
+  _mapLayers = [];
+
+  // Gather trips from schedTrips (assigned) — they have driver names
+  const allTrips = schedTrips.filter(t => t.driver && t.state !== 'cancelled');
+  const driverNames = [...new Set(allTrips.map(t => t.driver))];
+
+  // Legend
+  const legend = document.getElementById('mapLegend');
+  if (legend) {
+    legend.innerHTML = driverNames.map(n =>
+      `<span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:50%;background:${driverColor(n)};display:inline-block;"></span>${n}</span>`
+    ).join('');
+  }
+
+  const bounds = [];
+
+  allTrips.forEach(t => {
+    const meta = t.meta || '';
+    const parts = meta.split('→').map(s => s.trim());
+    const pickupAddr = parts[0] || '';
+    const dropoffAddr = parts[1] || '';
+    const pCoord = geocodeLocal(pickupAddr);
+    const dCoord = geocodeLocal(dropoffAddr);
+    const color = driverColor(t.driver);
+
+    // Pickup marker
+    if (pCoord) {
+      // Add slight jitter to prevent exact overlap
+      const jitP = [pCoord[0] + (Math.random() - 0.5) * 0.002, pCoord[1] + (Math.random() - 0.5) * 0.002];
+      const m = L.circleMarker(jitP, {
+        radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9
+      }).addTo(_mapInstance);
+      m.bindPopup(`<strong>${t.driver}</strong><br><em>${t.title}</em><br>Pickup: ${pickupAddr}<br>State: ${t.state}`);
+      _mapLayers.push(m);
+      bounds.push(jitP);
+    }
+
+    // Dropoff marker (diamond-ish with smaller circle)
+    if (dCoord) {
+      const jitD = [dCoord[0] + (Math.random() - 0.5) * 0.002, dCoord[1] + (Math.random() - 0.5) * 0.002];
+      const m2 = L.circleMarker(jitD, {
+        radius: 6, fillColor: color, color: color, weight: 3, fillOpacity: 0.4
+      }).addTo(_mapInstance);
+      m2.bindPopup(`<strong>${t.driver}</strong><br><em>${t.title}</em><br>Drop-off: ${dropoffAddr}`);
+      _mapLayers.push(m2);
+      bounds.push(jitD);
+    }
+
+    // Route line
+    if (pCoord && dCoord) {
+      const line = L.polyline([pCoord, dCoord], {
+        color, weight: 3, opacity: 0.7, dashArray: '8,6'
+      }).addTo(_mapInstance);
+      line.bindPopup(`<strong>${t.driver}</strong>: ${pickupAddr} → ${dropoffAddr}`);
+      _mapLayers.push(line);
+    }
+  });
+
+  // Also plot unassigned trips in grey
+  unassigned.forEach(u => {
+    const meta = u.meta || '';
+    const parts = meta.split('→').map(s => s.trim());
+    const pCoord = geocodeLocal(parts[0] || '');
+    const dCoord = geocodeLocal(parts[1] || '');
+    if (pCoord) {
+      const m = L.circleMarker(pCoord, {
+        radius: 7, fillColor: '#999', color: '#fff', weight: 2, fillOpacity: 0.7
+      }).addTo(_mapInstance);
+      m.bindPopup(`<strong>Unassigned</strong><br>${u.title}<br>${u.meta}`);
+      _mapLayers.push(m);
+      bounds.push(pCoord);
+    }
+    if (dCoord) {
+      bounds.push(dCoord);
+    }
+    if (pCoord && dCoord) {
+      const line = L.polyline([pCoord, dCoord], {
+        color: '#999', weight: 2, opacity: 0.5, dashArray: '4,6'
+      }).addTo(_mapInstance);
+      _mapLayers.push(line);
+    }
+  });
+
+  if (bounds.length > 0) {
+    _mapInstance.fitBounds(bounds, { padding: [40, 40] });
+  }
+}
+
+// Auto-render map when tab becomes visible
+const origShowView = showView;
+showView = function(name, el) {
+  origShowView(name, el);
+  if (name === 'map') {
+    setTimeout(() => {
+      initMap();
+      if (_mapInstance) _mapInstance.invalidateSize();
+      refreshMap();
+    }, 100);
+  }
+};
+
 </script>
 </body>
 </html>

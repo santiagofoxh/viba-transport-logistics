@@ -205,7 +205,7 @@ app.get('/api/schedule', requireAuth, (req, res) => {
   res.json({ date, trips, drivers });
 });
 
-app.post('/api/schedule/optimize', requireRole('operator', 'owner'), (req, res) => {
+app.post('/api/schedule/optimize', requireRole('operator', 'owner', 'scheduler'), (req, res) => {
   // Minimal greedy optimizer: for each unassigned trip, pick the driver with the closest free slot.
   const date = req.body.date || new Date().toISOString().slice(0, 10);
   const unassigned = db.prepare(`SELECT * FROM trips WHERE date(start_time) = date(?) AND driver_id IS NULL AND state != 'cancelled' ORDER BY start_time`).all(date);
@@ -349,7 +349,7 @@ app.get('/api/users', requireRole('owner'), (_req, res) => {
 app.post('/api/users', requireRole('owner'), async (req, res) => {
   const { email, name, password, role } = req.body || {};
   if (!email || !name || !password || !role) return res.status(400).json({ error: 'email, name, password, role required' });
-  if (!['owner', 'operator', 'driver'].includes(role)) return res.status(400).json({ error: 'invalid role' });
+  if (!['owner', 'operator', 'driver', 'scheduler'].includes(role)) return res.status(400).json({ error: 'invalid role' });
   const hash = await bcrypt.hash(password, 10);
   try {
     const info = db.prepare('INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)')

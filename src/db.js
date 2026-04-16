@@ -23,7 +23,7 @@ function initDb() {
       email         TEXT UNIQUE NOT NULL,
       name          TEXT NOT NULL,
       password_hash TEXT NOT NULL,
-      role          TEXT NOT NULL CHECK(role IN ('operator','owner','driver')),
+      role          TEXT NOT NULL CHECK(role IN ('operator','owner','driver','scheduler')),
       created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -92,6 +92,29 @@ function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  // Migration: add 'scheduler' to users role CHECK if table predates it.
+  // SQLite doesn't allow ALTER CHECK, so we recreate if needed.
+  try {
+    const tableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").get();
+    if (tableInfo && tableInfo.sql && !tableInfo.sql.includes('scheduler')) {
+      console.log('[db] Migrating users table to support scheduler role…');
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS users_new (
+          id            INTEGER PRIMARY KEY AUTOINCREMENT,
+          email         TEXT UNIQUE NOT NULL,
+          name          TEXT NOT NULL,
+          password_hash TEXT NOT NULL,
+          role          TEXT NOT NULL CHECK(role IN ('operator','owner','driver','scheduler')),
+          created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        INSERT INTO users_new SELECT * FROM users;
+        DROP TABLE users;
+        ALTER TABLE users_new RENAME TO users;
+      `);
+      console.log('[db] Migration complete.');
+    }
+  } catch (e) { console.warn('[db] Role migration skipped:', e.message); }
+
   console.log('[db] Schema ready at', DB_PATH);
 }
 
