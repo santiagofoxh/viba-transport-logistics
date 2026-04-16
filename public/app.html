@@ -91,6 +91,98 @@
   .modal-actions .btn-save:disabled { opacity: .5; cursor: not-allowed; transform: none; }
   .modal-actions .btn-delete { background: #FCE8E6; color: #B3261E; margin-right: auto; }
 
+  /* ============ WORKFLOW STEPPER ============ */
+  .wf-stepper {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; padding: 20px 24px 8px; max-width: 700px; margin: 0 auto;
+  }
+  .wf-step {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 10px 18px; border-radius: 10px;
+    transition: background .15s;
+    min-width: 120px;
+  }
+  .wf-step:hover { background: rgba(255,107,53,.06); }
+  .wf-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 14px;
+    background: var(--line); color: var(--slate-soft);
+    transition: background .2s, color .2s;
+  }
+  .wf-step.active .wf-num { background: var(--orange); color: #fff; box-shadow: 0 2px 8px rgba(255,107,53,.35); }
+  .wf-step.done .wf-num { background: var(--ok); color: #fff; }
+  .wf-label { font: 600 12px 'Inter', sans-serif; color: var(--slate-soft); letter-spacing: .5px; }
+  .wf-step.active .wf-label, .wf-step.done .wf-label { color: var(--navy); }
+  .wf-count { font: 500 11px 'Inter', sans-serif; color: var(--slate-soft); }
+  .wf-line { flex: 1; max-width: 60px; height: 2px; background: var(--line); margin: 0 4px; margin-bottom: 18px; }
+
+  .wf-panel {
+    background: #fff; border-radius: 12px; padding: 20px 24px; margin: 12px 24px;
+    border: 1px solid var(--line-soft); box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    max-width: 1440px;
+  }
+  .wf-next-btn {
+    background: var(--orange); color: #fff; border: 0;
+    padding: 10px 22px; border-radius: 8px; font: 600 13px 'Inter', sans-serif;
+    cursor: pointer; box-shadow: 0 2px 8px rgba(255,107,53,.25);
+    transition: transform .1s;
+  }
+  .wf-next-btn:hover { transform: translateY(-1px); }
+  .wf-back-btn {
+    background: var(--cream); color: var(--slate); border: 1px solid var(--line);
+    padding: 10px 18px; border-radius: 8px; font: 600 13px 'Inter', sans-serif;
+    cursor: pointer;
+  }
+
+  /* ============ QUICK-ADD FORM ============ */
+  .qa-form { margin-bottom: 12px; }
+  .qa-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .qa-input {
+    padding: 9px 10px; border: 1px solid var(--line); border-radius: 7px;
+    font: 500 13px 'Inter', sans-serif; color: var(--navy); background: var(--cream);
+    transition: border-color .15s;
+  }
+  .qa-input:focus { outline: none; border-color: var(--orange); background: #fff; }
+  .qa-input.qa-time { width: 95px; }
+  .qa-input.qa-name { width: 140px; }
+  .qa-input.qa-addr { flex: 1; min-width: 150px; }
+  .qa-input.qa-dur { width: 65px; text-align: center; }
+  .qa-add-btn {
+    background: var(--navy); color: #fff; border: 0;
+    padding: 9px 16px; border-radius: 7px; font: 600 13px 'Inter', sans-serif;
+    cursor: pointer; white-space: nowrap; transition: background .15s;
+  }
+  .qa-add-btn:hover { background: var(--navy-soft); }
+  .qa-list { margin-top: 8px; }
+  .qa-empty { text-align: center; padding: 28px; color: var(--slate-soft); font-size: 13px; font-style: italic; }
+  .qa-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft); transition: background .15s;
+  }
+  .qa-item:hover { background: rgba(255,107,53,.04); }
+  .qa-item:last-child { border-bottom: 0; }
+  .qa-item-time {
+    font: 700 14px 'Inter', sans-serif; color: var(--orange);
+    min-width: 65px; font-variant-numeric: tabular-nums;
+  }
+  .qa-item-name { font-weight: 600; color: var(--navy); font-size: 13px; min-width: 110px; }
+  .qa-item-route { flex: 1; font-size: 12px; color: var(--slate); }
+  .qa-item-route strong { color: var(--navy); font-weight: 600; }
+  .qa-item-dur { font-size: 11px; color: var(--slate-soft); min-width: 50px; text-align: right; }
+  .qa-item-actions { display: flex; gap: 4px; }
+  .qa-item-actions button {
+    background: none; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    font-size: 14px; transition: background .15s;
+  }
+  .qa-item-actions button:hover { background: var(--line-soft); }
+  .qa-total { font: 600 13px 'Inter', sans-serif; color: var(--slate); }
+
+  /* Zone panel inner (step 2) */
+  .zone-panel-inner { /* no collapse toggle in step mode */ }
+
   html, body { margin: 0; padding: 0; }
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -1378,7 +1470,7 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
   <div class="sched-header">
     <div>
       <h1>Schedule</h1>
-      <div class="meta">Plan trips, assign drivers, and let the AI optimize the routes.</div>
+      <div class="meta">Build tomorrow's calendar: add trips, confirm drivers, then let AI assign routes.</div>
     </div>
     <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
       <div class="date-nav">
@@ -1390,55 +1482,111 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
         <button class="active" onclick="setSchedMode('day', this)">Day</button>
         <button onclick="setSchedMode('week', this)">Week</button>
       </div>
+      <button onclick="openTripModal()" style="background:var(--orange);color:#fff;border:0;padding:10px 18px;border-radius:8px;font:600 13px 'Inter',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.3);white-space:nowrap;">+ Add Trip</button>
+    </div>
+  </div>
+
+  <!-- ===== 3-STEP WORKFLOW ===== -->
+  <div class="wf-stepper">
+    <div class="wf-step active" id="wfStep1" onclick="goToStep(1)">
+      <div class="wf-num">1</div>
+      <div class="wf-label">Add Trips</div>
+      <div class="wf-count" id="wfCount1">0 trips</div>
+    </div>
+    <div class="wf-line"></div>
+    <div class="wf-step" id="wfStep2" onclick="goToStep(2)">
+      <div class="wf-num">2</div>
+      <div class="wf-label">Drivers &amp; Zones</div>
+      <div class="wf-count" id="wfCount2">0 drivers</div>
+    </div>
+    <div class="wf-line"></div>
+    <div class="wf-step" id="wfStep3" onclick="goToStep(3)">
+      <div class="wf-num">3</div>
+      <div class="wf-label">AI Create Schedule</div>
+      <div class="wf-count" id="wfCount3">—</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Quick-add trips -->
+  <div class="wf-panel" id="wfPanel1">
+    <div class="qa-header">
+      <div>
+        <h3 style="margin:0; font-size:16px; color:var(--navy);">Quick-Add Trips</h3>
+        <div style="font-size:12px; color:var(--slate); margin-top:2px;">Enter pickup time, pickup address, and drop-off address. Press Enter or click Add to queue the trip.</div>
+      </div>
+    </div>
+    <div class="qa-form" id="qaForm">
+      <div class="qa-row">
+        <input class="qa-input qa-time" id="qaTime" type="time" value="08:00" title="Pickup time" />
+        <input class="qa-input qa-name" id="qaName" placeholder="Customer name" title="Customer name" />
+        <input class="qa-input qa-addr" id="qaPickup" placeholder="Pickup address" title="Pickup address" />
+        <input class="qa-input qa-addr" id="qaDropoff" placeholder="Drop-off address" title="Drop-off" />
+        <input class="qa-input qa-dur" id="qaDur" type="number" min="10" max="300" value="45" title="Duration (min)" style="width:65px;" />
+        <button class="qa-add-btn" onclick="quickAddTrip()">+ Add</button>
+      </div>
+    </div>
+    <div class="qa-list" id="qaList">
+      <div class="qa-empty">No trips added yet. Start typing above to build tomorrow's schedule.</div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+      <div class="qa-total" id="qaTotalText">0 trips queued</div>
+      <button class="wf-next-btn" onclick="goToStep(2)">Next: Drivers &amp; Zones →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Drivers + zones -->
+  <div class="wf-panel" id="wfPanel2" style="display:none;">
+    <div class="zone-panel-inner" id="zonePanel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div>
+          <h3 style="margin:0; font-size:16px; color:var(--navy);">Available Drivers &amp; Zone Coverage</h3>
+          <div style="font-size:12px; color:var(--slate); margin-top:2px;">Toggle which drivers are available and assign their zones. The optimizer prefers zone-matched drivers.</div>
+        </div>
+      </div>
+      <div class="zone-body" id="zoneBody"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+      <button class="wf-back-btn" onclick="goToStep(1)">← Back to Trips</button>
+      <button class="wf-next-btn" onclick="goToStep(3)">Next: Create Schedule →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: AI optimize + timeline result -->
+  <div class="wf-panel" id="wfPanel3" style="display:none;">
+    <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+      <button class="ai-opt-btn" id="aiOptBtn" onclick="runAIOptimize()" style="font-size:15px; padding:14px 28px;">
+        <span class="ai-spark">✦</span> AI Optimize &amp; Assign All Trips
+      </button>
       <button class="resequence-btn" onclick="resequenceRoutes()" title="Reorder each driver's trips to minimize travel time">
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14M5 5l7 7-7 7"/><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
         Re-sequence Routes
       </button>
-      <button onclick="openTripModal()" style="background:var(--orange);color:#fff;border:0;padding:10px 18px;border-radius:8px;font:600 13px 'Inter',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.3);white-space:nowrap;">+ Add Trip</button>
-      <button class="ai-opt-btn" id="aiOptBtn" onclick="runAIOptimize()">
-        <span class="ai-spark">✦</span> AI Optimize Routes
-      </button>
+      <button class="wf-back-btn" onclick="goToStep(2)">← Back to Drivers</button>
     </div>
-  </div>
 
-  <div class="zone-panel" id="zonePanel">
-    <div class="zone-toggle" onclick="document.getElementById('zonePanel').classList.toggle('collapsed')">
-      <div class="zone-toggle-left">
-        <div class="icon-square">
-          <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
-        </div>
-        <div>
-          <h3>Driver Zone Coverage</h3>
-          <div class="zone-sub">Assign each driver to the areas of El Paso they cover. The optimizer prefers matches.</div>
-        </div>
+    <div class="sched-summary">
+      <div class="ssum"><div class="l">Scheduled</div><div class="v" id="schTotal">0</div></div>
+      <div class="ssum highlight"><div class="l">Unassigned</div><div class="v" id="schUnassigned">0</div></div>
+      <div class="ssum"><div class="l">Active drivers</div><div class="v" id="schActiveDrivers">3 / 3</div></div>
+      <div class="ssum"><div class="l">Capacity used</div><div class="v" id="schCapacity">0%</div></div>
+      <div class="ssum"><div class="l">Next free slot</div><div class="v" id="schNext" style="font-size: 16px; font-family: 'Inter', sans-serif;">—</div></div>
+    </div>
+
+    <div class="bench" id="benchBar">
+      <div class="bench-label">
+        <svg viewBox="0 0 24 24"><path d="M12 22q-2.075 0-3.9-.788T4.9 19.1q-1.325-1.325-2.112-3.15T2 12q0-2.075.788-3.9T4.9 4.9q1.325-1.325 3.15-2.112T12 2q2.075 0 3.9.788T19.1 4.9q1.325 1.325 2.112 3.15T22 12q0 2.075-.788 3.9T19.1 19.1q-1.325 1.325-3.15 2.112T12 22zm0-2q3.35 0 5.675-2.325T20 12q0-3.35-2.325-5.675T12 4Q8.65 4 6.325 6.325T4 12q0 3.35 2.325 5.675T12 20zm0-6.5q.425 0 .713-.288T13 12.5v-5q0-.425-.288-.713T12 6.5q-.425 0-.713.288T11 7.5v5q0 .425.288.713T12 13.5zm0 3q.425 0 .713-.288T13 15.5q0-.425-.288-.713T12 14.5q-.425 0-.713.288T11 15.5q0 .425.288.713T12 16.5z"/></svg>
+        Unassigned — needs a driver
       </div>
-      <div class="chevron">▼</div>
+      <div id="benchTrips" style="display:flex; gap:8px; flex-wrap: wrap; flex: 1;"></div>
     </div>
-    <div class="zone-body" id="zoneBody"></div>
-  </div>
 
-  <div class="sched-summary">
-    <div class="ssum"><div class="l">Scheduled today</div><div class="v" id="schTotal">0</div></div>
-    <div class="ssum highlight"><div class="l">Unassigned</div><div class="v" id="schUnassigned">0</div></div>
-    <div class="ssum"><div class="l">Active drivers</div><div class="v" id="schActiveDrivers">3 / 3</div></div>
-    <div class="ssum"><div class="l">Capacity used</div><div class="v" id="schCapacity">0%</div></div>
-    <div class="ssum"><div class="l">Next free slot</div><div class="v" id="schNext" style="font-size: 16px; font-family: 'Inter', sans-serif;">—</div></div>
-  </div>
-
-  <div class="bench" id="benchBar">
-    <div class="bench-label">
-      <svg viewBox="0 0 24 24"><path d="M12 22q-2.075 0-3.9-.788T4.9 19.1q-1.325-1.325-2.112-3.15T2 12q0-2.075.788-3.9T4.9 4.9q1.325-1.325 3.15-2.112T12 2q2.075 0 3.9.788T19.1 4.9q1.325 1.325 2.112 3.15T22 12q0 2.075-.788 3.9T19.1 19.1q-1.325 1.325-3.15 2.112T12 22zm0-2q3.35 0 5.675-2.325T20 12q0-3.35-2.325-5.675T12 4Q8.65 4 6.325 6.325T4 12q0 3.35 2.325 5.675T12 20zm0-6.5q.425 0 .713-.288T13 12.5v-5q0-.425-.288-.713T12 6.5q-.425 0-.713.288T11 7.5v5q0 .425.288.713T12 13.5zm0 3q.425 0 .713-.288T13 15.5q0-.425-.288-.713T12 14.5q-.425 0-.713.288T11 15.5q0 .425.288.713T12 16.5z"/></svg>
-      Unassigned — needs a driver
+    <div class="timeline-wrap">
+      <div class="timeline-head">
+        <div class="tl-corner">Drivers</div>
+        <div class="tl-hours" id="tlHours"></div>
+      </div>
+      <div id="tlBody"></div>
     </div>
-    <div id="benchTrips" style="display:flex; gap:8px; flex-wrap: wrap; flex: 1;"></div>
-  </div>
-
-  <div class="timeline-wrap">
-    <div class="timeline-head">
-      <div class="tl-corner">Drivers</div>
-      <div class="tl-hours" id="tlHours"></div>
-    </div>
-    <div id="tlBody"></div>
   </div>
 </section>
 
@@ -2514,6 +2662,12 @@ function setSchedMode(m, el) {
 }
 function changeDay(dir) {
   schedDate.setDate(schedDate.getDate() + dir);
+  qaTrips = [];
+  renderQaList();
+  refreshScheduleFromAPI().then(() => {
+    updateWfCounts();
+    if (currentStep === 3) renderSchedule();
+  });
   renderSchedule();
 }
 function fmtDate(d) {
@@ -2882,6 +3036,188 @@ function resequenceRoutes() {
   showToast(msg, sub);
   pushActivity(`Route resequencer: ${swaps} swap${swaps === 1 ? '' : 's'}, ~${minutesSaved} min saved`);
 }
+
+/* =====================================================
+   3-STEP WORKFLOW — QUICK ADD, DRIVERS, AI
+   ===================================================== */
+let currentStep = 1;
+let qaTrips = []; // trips queued via quick-add (not yet saved to API)
+
+function goToStep(n) {
+  currentStep = n;
+  [1,2,3].forEach(i => {
+    const panel = document.getElementById('wfPanel' + i);
+    const step = document.getElementById('wfStep' + i);
+    if (panel) panel.style.display = (i === n) ? '' : 'none';
+    if (step) {
+      step.classList.toggle('active', i === n);
+      step.classList.toggle('done', i < n);
+    }
+  });
+  updateWfCounts();
+  if (n === 2) renderZonePanel();
+  if (n === 3) { renderSchedule(); computeNextAvailable(); }
+}
+
+function updateWfCounts() {
+  const totalTrips = schedTrips.length + unassigned.length + qaTrips.length;
+  const el1 = document.getElementById('wfCount1');
+  const el2 = document.getElementById('wfCount2');
+  const el3 = document.getElementById('wfCount3');
+  if (el1) el1.textContent = `${totalTrips} trip${totalTrips === 1 ? '' : 's'}`;
+  const activeD = schedDrivers.filter(d => d.avail).length;
+  if (el2) el2.textContent = `${activeD} driver${activeD === 1 ? '' : 's'}`;
+  const unCount = unassigned.length;
+  if (el3) el3.textContent = unCount > 0 ? `${unCount} unassigned` : 'Ready';
+}
+
+// Quick-add: Enter key handler
+document.addEventListener('DOMContentLoaded', () => {
+  ['qaName', 'qaPickup', 'qaDropoff', 'qaDur'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') quickAddTrip(); });
+  });
+});
+// Also run immediately in case DOM is already loaded
+setTimeout(() => {
+  ['qaName', 'qaPickup', 'qaDropoff', 'qaDur'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') quickAddTrip(); });
+  });
+}, 0);
+
+function quickAddTrip() {
+  const time = document.getElementById('qaTime').value;
+  const name = document.getElementById('qaName').value.trim();
+  const pickup = document.getElementById('qaPickup').value.trim();
+  const dropoff = document.getElementById('qaDropoff').value.trim();
+  const dur = parseInt(document.getElementById('qaDur').value, 10) || 45;
+
+  if (!pickup || !dropoff) { alert('Pickup and drop-off addresses are required.'); return; }
+
+  const trip = {
+    _qaId: 'qa-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+    time,
+    name: name || 'Walk-in',
+    pickup,
+    dropoff,
+    dur,
+    saved: false, // not yet posted to API
+  };
+  qaTrips.push(trip);
+  renderQaList();
+  updateWfCounts();
+
+  // Clear inputs but keep time +45min from last entry for fast sequential entry
+  document.getElementById('qaName').value = '';
+  document.getElementById('qaPickup').value = '';
+  document.getElementById('qaDropoff').value = '';
+  // Advance time by duration for next entry
+  if (time) {
+    const [hh, mm] = time.split(':').map(Number);
+    const nextMin = hh * 60 + mm + dur;
+    const nh = Math.floor(nextMin / 60);
+    const nm = nextMin % 60;
+    if (nh < 24) document.getElementById('qaTime').value = `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`;
+  }
+  document.getElementById('qaName').focus();
+
+  pushActivity(`Queued trip: ${trip.name} — ${pickup} → ${dropoff} @ ${fmtTime24to12(time)}`);
+}
+
+function fmtTime24to12(t) {
+  if (!t) return '—';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const hr = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+  return `${hr}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+function renderQaList() {
+  const el = document.getElementById('qaList');
+  if (!el) return;
+  if (qaTrips.length === 0) {
+    el.innerHTML = '<div class="qa-empty">No trips added yet. Start typing above to build tomorrow\'s schedule.</div>';
+  } else {
+    el.innerHTML = qaTrips.map(t => `
+      <div class="qa-item" id="${t._qaId}">
+        <div class="qa-item-time">${fmtTime24to12(t.time)}</div>
+        <div class="qa-item-name">${t.name}</div>
+        <div class="qa-item-route"><strong>${t.pickup}</strong> → <strong>${t.dropoff}</strong></div>
+        <div class="qa-item-dur">${t.dur} min</div>
+        <div class="qa-item-actions">
+          <button onclick="editQaTrip('${t._qaId}')" title="Edit">✏️</button>
+          <button onclick="removeQaTrip('${t._qaId}')" title="Remove">✕</button>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('qaTotalText').textContent = `${qaTrips.length} trip${qaTrips.length === 1 ? '' : 's'} queued`;
+}
+
+function removeQaTrip(qaId) {
+  qaTrips = qaTrips.filter(t => t._qaId !== qaId);
+  renderQaList();
+  updateWfCounts();
+}
+
+function editQaTrip(qaId) {
+  const t = qaTrips.find(x => x._qaId === qaId);
+  if (!t) return;
+  // Load back into the form
+  document.getElementById('qaTime').value = t.time;
+  document.getElementById('qaName').value = t.name;
+  document.getElementById('qaPickup').value = t.pickup;
+  document.getElementById('qaDropoff').value = t.dropoff;
+  document.getElementById('qaDur').value = t.dur;
+  // Remove from list so re-add replaces it
+  removeQaTrip(qaId);
+  document.getElementById('qaName').focus();
+}
+
+// Save all queued trips to API when moving to step 3
+async function saveQaTripsToAPI() {
+  if (qaTrips.length === 0) return;
+  const dateStr = schedDate.toISOString().slice(0, 10);
+  const toSave = [...qaTrips];
+  qaTrips = [];
+  renderQaList();
+
+  for (const t of toSave) {
+    const start_time = `${dateStr}T${t.time || '08:00'}:00`;
+    try {
+      await fetch('/api/trips', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: t.name,
+          customer_phone: '',
+          pickup: t.pickup,
+          dropoff: t.dropoff,
+          start_time,
+          duration_min: t.dur,
+          notes: '',
+          driver_id: null,
+        }),
+      });
+    } catch(e) { console.error('saveQaTrip failed:', e); }
+  }
+  await refreshScheduleFromAPI();
+  updateWfCounts();
+  showToast(`${toSave.length} trip${toSave.length === 1 ? '' : 's'} saved`, 'Ready for AI optimization.');
+}
+
+// Override goToStep(3) to auto-save queued trips first
+const _originalGoToStep = goToStep;
+goToStep = async function(n) {
+  if (n === 3 && qaTrips.length > 0) {
+    await saveQaTripsToAPI();
+  }
+  _originalGoToStep(n);
+};
+
+// Initialize workflow
+renderQaList();
+updateWfCounts();
 
 function showToast(msg, sub) {
   const t = document.getElementById('toast');
