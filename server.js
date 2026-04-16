@@ -112,10 +112,16 @@ app.post('/api/drivers', requireRole('owner', 'operator'), (req, res) => {
   res.status(201).json({ id: info.lastInsertRowid });
 });
 app.patch('/api/drivers/:id', requireRole('owner', 'operator'), (req, res) => {
-  const { available, van, zone, phone } = req.body;
+  const { available, name, van, zone, phone } = req.body;
   db.prepare(
-    'UPDATE drivers SET available = COALESCE(?, available), van = COALESCE(?, van), zone = COALESCE(?, zone), phone = COALESCE(?, phone) WHERE id = ?'
-  ).run(available == null ? null : (available ? 1 : 0), van, zone, phone, req.params.id);
+    'UPDATE drivers SET available = COALESCE(?, available), name = COALESCE(?, name), van = COALESCE(?, van), zone = COALESCE(?, zone), phone = COALESCE(?, phone) WHERE id = ?'
+  ).run(available == null ? null : (available ? 1 : 0), name, van, zone, phone, req.params.id);
+  logActivity(req.session.userId, 'driver_updated', `Driver #${req.params.id} updated`, req.params.id);
+  res.json({ ok: true });
+});
+app.delete('/api/drivers/:id', requireRole('owner'), (req, res) => {
+  db.prepare('DELETE FROM drivers WHERE id = ?').run(req.params.id);
+  logActivity(req.session.userId, 'driver_deleted', `Driver #${req.params.id} deleted`, req.params.id);
   res.json({ ok: true });
 });
 
@@ -151,6 +157,30 @@ app.patch('/api/trips/:id/state', requireAuth, (req, res) => {
   db.prepare('UPDATE trips SET state = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(state, trip.id);
   logActivity(req.session.userId, 'trip_state', `Trip #${trip.id} → ${state}`, trip.id);
   res.json({ ok: true, state });
+});
+
+app.patch('/api/trips/:id', requireRole('operator', 'owner'), (req, res) => {
+  const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(req.params.id);
+  if (!trip) return res.status(404).json({ error: 'not found' });
+  const { customer_name, customer_phone, pickup, dropoff, start_time, duration_min, notes, driver_id } = req.body;
+  db.prepare(`UPDATE trips SET
+    customer_name = COALESCE(?, customer_name),
+    customer_phone = COALESCE(?, customer_phone),
+    pickup = COALESCE(?, pickup),
+    dropoff = COALESCE(?, dropoff),
+    start_time = COALESCE(?, start_time),
+    duration_min = COALESCE(?, duration_min),
+    notes = COALESCE(?, notes),
+    driver_id = COALESCE(?, driver_id),
+    updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?`).run(customer_name, customer_phone, pickup, dropoff, start_time, duration_min, notes, driver_id, req.params.id);
+  logActivity(req.session.userId, 'trip_updated', `Trip #${req.params.id} details updated`, req.params.id);
+  res.json({ ok: true });
+});
+app.delete('/api/trips/:id', requireRole('owner', 'operator'), (req, res) => {
+  db.prepare('DELETE FROM trips WHERE id = ?').run(req.params.id);
+  logActivity(req.session.userId, 'trip_deleted', `Trip #${req.params.id} deleted`, req.params.id);
+  res.json({ ok: true });
 });
 
 app.patch('/api/trips/:id/assign', requireRole('operator', 'owner'), (req, res) => {

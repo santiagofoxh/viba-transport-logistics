@@ -33,6 +33,64 @@
   }
 
   * { box-sizing: border-box; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 900;
+    background: rgba(6,25,46,.55); backdrop-filter: blur(3px);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    position: fixed; z-index: 910;
+    top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.96);
+    background: #fff; border-radius: 14px;
+    width: 95%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 30px 70px rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: transform .2s, opacity .2s;
+  }
+  .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px 0; margin-bottom: 4px;
+  }
+  .modal-head h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin: 0; color: var(--navy); }
+  .modal-close {
+    background: none; border: 0; font-size: 22px; cursor: pointer; color: var(--slate);
+    width: 32px; height: 32px; display: grid; place-items: center; border-radius: 6px;
+  }
+  .modal-close:hover { background: var(--cream); }
+  .modal-body { padding: 16px 24px 24px; }
+  .modal-body label {
+    display: block; font-size: 11px; letter-spacing: 1.5px; font-weight: 700;
+    color: var(--slate); text-transform: uppercase; margin-bottom: 5px; margin-top: 14px;
+  }
+  .modal-body label:first-child { margin-top: 0; }
+  .modal-body input, .modal-body select, .modal-body textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    font: 500 14px 'Inter', sans-serif; color: var(--navy); background: var(--cream);
+    transition: border-color .15s, background .15s;
+  }
+  .modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus {
+    outline: none; border-color: var(--orange); background: #fff;
+  }
+  .modal-body textarea { resize: vertical; min-height: 60px; }
+  .modal-body select { appearance: auto; }
+  .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .modal-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line-soft);
+  }
+  .modal-actions button {
+    padding: 10px 20px; border-radius: 8px; font: 600 13px 'Inter', sans-serif; cursor: pointer;
+    border: 0; transition: transform .1s;
+  }
+  .modal-actions button:hover { transform: translateY(-1px); }
+  .modal-actions .btn-cancel { background: var(--cream); color: var(--slate); border: 1px solid var(--line); }
+  .modal-actions .btn-save { background: var(--orange); color: #fff; box-shadow: 0 3px 10px rgba(255,107,53,.3); }
+  .modal-actions .btn-save:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .modal-actions .btn-delete { background: #FCE8E6; color: #B3261E; margin-right: auto; }
+
   html, body { margin: 0; padding: 0; }
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -1145,7 +1203,10 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
       <h1><span class="live-indicator">● LIVE</span> Drivers</h1>
       <div class="meta">Radio updates from the road. Tap the button on a driver's card each time they call in. <strong style="color:#fff">Keep it fast.</strong></div>
     </div>
-    <div class="live-clock"><span class="live-dot" style="background:#6EE7B7"></span> <span id="liveClock">—</span></div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button onclick="openDriverModal()" style="background:var(--orange);color:#fff;border:0;padding:10px 18px;border-radius:8px;font:600 13px 'Inter',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.3);white-space:nowrap;">+ Add Driver</button>
+      <div class="live-clock"><span class="live-dot" style="background:#6EE7B7"></span> <span id="liveClock">—</span></div>
+    </div>
   </div>
   <div class="live-grid" id="liveGrid"></div>
 </section>
@@ -1333,6 +1394,7 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14M5 5l7 7-7 7"/><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
         Re-sequence Routes
       </button>
+      <button onclick="openTripModal()" style="background:var(--orange);color:#fff;border:0;padding:10px 18px;border-radius:8px;font:600 13px 'Inter',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(255,107,53,.3);white-space:nowrap;">+ Add Trip</button>
       <button class="ai-opt-btn" id="aiOptBtn" onclick="runAIOptimize()">
         <span class="ai-spark">✦</span> AI Optimize Routes
       </button>
@@ -1358,7 +1420,7 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
   <div class="sched-summary">
     <div class="ssum"><div class="l">Scheduled today</div><div class="v" id="schTotal">0</div></div>
     <div class="ssum highlight"><div class="l">Unassigned</div><div class="v" id="schUnassigned">0</div></div>
-    <div class="ssum"><div class="l">Active drivers</div><div class="v">4 / 5</div></div>
+    <div class="ssum"><div class="l">Active drivers</div><div class="v" id="schActiveDrivers">3 / 3</div></div>
     <div class="ssum"><div class="l">Capacity used</div><div class="v" id="schCapacity">0%</div></div>
     <div class="ssum"><div class="l">Next free slot</div><div class="v" id="schNext" style="font-size: 16px; font-family: 'Inter', sans-serif;">—</div></div>
   </div>
@@ -1379,6 +1441,73 @@ document.getElementById('uiSignOut').addEventListener('click', async () => {
     <div id="tlBody"></div>
   </div>
 </section>
+
+<!-- ============ DRIVER MODAL ============ -->
+<div class="modal-backdrop" id="driverBackdrop" onclick="closeDriverModal()"></div>
+<div class="modal" id="driverModal">
+  <div class="modal-head">
+    <h2 id="driverModalTitle">Add Driver</h2>
+    <button class="modal-close" onclick="closeDriverModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="dm-id" />
+    <label for="dm-name">Driver name</label>
+    <input id="dm-name" placeholder="e.g. J. Martinez" />
+    <div class="modal-row">
+      <div><label for="dm-van">Van / vehicle</label><input id="dm-van" placeholder="e.g. Van 04" /></div>
+      <div><label for="dm-zone">Home zone</label>
+        <select id="dm-zone">
+          <option value="">— Select —</option>
+          <option>Central</option><option>Downtown</option><option>Westside</option>
+          <option>Northeast</option><option>East</option><option>Mission Valley</option>
+          <option>Lower Valley</option><option>Far East</option>
+        </select>
+      </div>
+    </div>
+    <label for="dm-phone">Phone number</label>
+    <input id="dm-phone" placeholder="915-555-0000" />
+    <div class="modal-actions">
+      <button class="btn-delete" id="dm-delete" style="display:none" onclick="deleteDriver()">Delete</button>
+      <button class="btn-cancel" onclick="closeDriverModal()">Cancel</button>
+      <button class="btn-save" id="dm-save" onclick="saveDriver()">Save Driver</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TRIP MODAL ============ -->
+<div class="modal-backdrop" id="tripBackdrop" onclick="closeTripModal()"></div>
+<div class="modal" id="tripModal">
+  <div class="modal-head">
+    <h2 id="tripModalTitle">Add Trip</h2>
+    <button class="modal-close" onclick="closeTripModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="tm-id" />
+    <div class="modal-row">
+      <div><label for="tm-cust">Customer name</label><input id="tm-cust" placeholder="Mrs. Garcia" /></div>
+      <div><label for="tm-phone">Phone</label><input id="tm-phone" placeholder="915-555-0000" /></div>
+    </div>
+    <label for="tm-pickup">Pickup address</label>
+    <input id="tm-pickup" placeholder="e.g. 4200 Mesa St" />
+    <label for="tm-dropoff">Drop-off address</label>
+    <input id="tm-dropoff" placeholder="e.g. Las Palmas Medical" />
+    <div class="modal-row">
+      <div><label for="tm-time">Start time</label><input id="tm-time" type="datetime-local" /></div>
+      <div><label for="tm-dur">Duration (min)</label><input id="tm-dur" type="number" min="10" max="300" value="45" /></div>
+    </div>
+    <label for="tm-driver">Assign driver</label>
+    <select id="tm-driver">
+      <option value="">— Unassigned —</option>
+    </select>
+    <label for="tm-notes">Notes</label>
+    <textarea id="tm-notes" rows="2" placeholder="e.g. Wheelchair van needed"></textarea>
+    <div class="modal-actions">
+      <button class="btn-delete" id="tm-delete" style="display:none" onclick="deleteTrip()">Delete</button>
+      <button class="btn-cancel" onclick="closeTripModal()">Cancel</button>
+      <button class="btn-save" id="tm-save" onclick="saveTrip()">Save Trip</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ TOAST ============ -->
 <div class="toast" id="toast">
@@ -1741,6 +1870,7 @@ function renderLive() {
           ${btnHtml}
           <div class="dv-sec-actions">
             <button class="radio" onclick="liveRadio('${d.name}')">📻 Radio check</button>
+            <button onclick="editDriverByName('${d.name}')">✏️ Edit driver</button>
             <button onclick="showView('console', document.querySelectorAll('.tab')[2])">Full details</button>
           </div>
         </div>
@@ -1779,6 +1909,310 @@ function liveRadio(driverName) {
 }
 
 renderLive();
+
+/* =====================================================
+   DRIVER MODAL — ADD / EDIT
+   ===================================================== */
+let _apiDrivers = []; // cached from API
+
+async function loadApiDrivers() {
+  try {
+    const r = await fetch('/api/drivers', { credentials: 'same-origin' });
+    if (r.ok) _apiDrivers = await r.json();
+  } catch(e) { console.warn('loadApiDrivers', e); }
+}
+loadApiDrivers();
+
+function openDriverModal(driverApiId) {
+  document.getElementById('driverBackdrop').classList.add('open');
+  document.getElementById('driverModal').classList.add('open');
+  document.getElementById('dm-id').value = '';
+  document.getElementById('dm-name').value = '';
+  document.getElementById('dm-van').value = '';
+  document.getElementById('dm-zone').value = '';
+  document.getElementById('dm-phone').value = '';
+  document.getElementById('dm-delete').style.display = 'none';
+  document.getElementById('driverModalTitle').textContent = 'Add Driver';
+  document.getElementById('dm-save').textContent = 'Add Driver';
+
+  if (driverApiId) {
+    const d = _apiDrivers.find(x => x.id === driverApiId);
+    if (d) {
+      document.getElementById('driverModalTitle').textContent = 'Edit Driver';
+      document.getElementById('dm-save').textContent = 'Save Changes';
+      document.getElementById('dm-id').value = d.id;
+      document.getElementById('dm-name').value = d.name || '';
+      document.getElementById('dm-van').value = d.van || '';
+      document.getElementById('dm-zone').value = d.zone || '';
+      document.getElementById('dm-phone').value = d.phone || '';
+      if (window.__viba_user?.role === 'owner') document.getElementById('dm-delete').style.display = '';
+    }
+  }
+  document.getElementById('dm-name').focus();
+}
+
+function closeDriverModal() {
+  document.getElementById('driverBackdrop').classList.remove('open');
+  document.getElementById('driverModal').classList.remove('open');
+}
+
+function editDriverByName(driverName) {
+  const d = _apiDrivers.find(x => x.name === driverName);
+  if (d) openDriverModal(d.id);
+  else openDriverModal(); // fallback to add
+}
+
+async function saveDriver() {
+  const id = document.getElementById('dm-id').value;
+  const name = document.getElementById('dm-name').value.trim();
+  const van = document.getElementById('dm-van').value.trim();
+  const zone = document.getElementById('dm-zone').value;
+  const phone = document.getElementById('dm-phone').value.trim();
+  if (!name) { alert('Driver name is required.'); return; }
+
+  const btn = document.getElementById('dm-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if (id) {
+      // EDIT
+      await fetch(`/api/drivers/${id}`, {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, van, zone, phone }),
+      });
+    } else {
+      // ADD
+      await fetch('/api/drivers', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, van, zone, phone }),
+      });
+    }
+    await loadApiDrivers();
+    syncDriversToUI();
+    closeDriverModal();
+    showToast(id ? 'Driver updated' : 'Driver added', `${name} — ${van || 'no van'} • ${zone || 'no zone'}`);
+    pushActivity(id ? `Updated driver ${name}` : `Added new driver ${name}`);
+  } catch(e) { alert('Failed to save driver.'); }
+  btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Add Driver';
+}
+
+async function deleteDriver() {
+  const id = document.getElementById('dm-id').value;
+  const name = document.getElementById('dm-name').value;
+  if (!id) return;
+  if (!confirm(`Delete driver "${name}"? This cannot be undone.`)) return;
+  try {
+    await fetch(`/api/drivers/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+    await loadApiDrivers();
+    syncDriversToUI();
+    closeDriverModal();
+    showToast('Driver deleted', name);
+    pushActivity(`Deleted driver ${name}`);
+  } catch(e) { alert('Failed to delete driver.'); }
+}
+
+// Sync API driver list into all client-side arrays and re-render
+function syncDriversToUI() {
+  // Rebuild LIVE_DRIVERS
+  LIVE_DRIVERS.length = 0;
+  _apiDrivers.filter(d => d.available).forEach(d => {
+    const ini = d.name.split(/[\s.]+/).filter(Boolean).map(p => p[0]).join('').toUpperCase().slice(0,2);
+    LIVE_DRIVERS.push({ ini, name: d.name, van: d.van || '', zone: d.zone || '' });
+  });
+
+  // Rebuild schedDrivers
+  schedDrivers.length = 0;
+  _apiDrivers.filter(d => d.available).forEach(d => {
+    const ini = d.name.split(/[\s.]+/).filter(Boolean).map(p => p[0]).join('').toUpperCase().slice(0,2);
+    schedDrivers.push({ ini, name: d.name, van: d.van || '', zone: d.zone || '', avail: true });
+  });
+
+  // Rebuild drivers sidebar
+  drivers.length = 0;
+  _apiDrivers.filter(d => d.available).forEach(d => {
+    const ini = d.name.split(/[\s.]+/).filter(Boolean).map(p => p[0]).join('').toUpperCase().slice(0,2);
+    drivers.push({ ini, name: d.name, sub: `${d.van || '—'} • active`, status: 'Active', cls: 'ok' });
+  });
+
+  // Ensure driverZones has entries for all current drivers
+  _apiDrivers.forEach(d => {
+    if (!driverZones[d.name]) driverZones[d.name] = d.zone ? [d.zone] : [];
+  });
+
+  // Update active drivers stat
+  const statEl = document.querySelector('.ssum .v');
+
+  renderLive();
+  renderDrivers();
+  renderSchedule();
+  renderZonePanel();
+  computeNextAvailable();
+
+  // Update driver dropdown in trip modal
+  populateTripDriverSelect();
+}
+
+function populateTripDriverSelect() {
+  const sel = document.getElementById('tm-driver');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Unassigned —</option>';
+  _apiDrivers.filter(d => d.available).forEach(d => {
+    sel.innerHTML += `<option value="${d.id}">${d.name} (${d.van || '—'})</option>`;
+  });
+  sel.value = current;
+}
+
+/* =====================================================
+   TRIP MODAL — ADD / EDIT
+   ===================================================== */
+function openTripModal(tripApiId) {
+  document.getElementById('tripBackdrop').classList.add('open');
+  document.getElementById('tripModal').classList.add('open');
+  document.getElementById('tm-id').value = '';
+  document.getElementById('tm-cust').value = '';
+  document.getElementById('tm-phone').value = '';
+  document.getElementById('tm-pickup').value = '';
+  document.getElementById('tm-dropoff').value = '';
+  document.getElementById('tm-dur').value = '45';
+  document.getElementById('tm-notes').value = '';
+  document.getElementById('tm-driver').value = '';
+  document.getElementById('tm-delete').style.display = 'none';
+  document.getElementById('tripModalTitle').textContent = 'Add Trip';
+  document.getElementById('tm-save').textContent = 'Add Trip';
+
+  // Default time to next round 15 min
+  const now = new Date();
+  now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0);
+  document.getElementById('tm-time').value = now.toISOString().slice(0, 16);
+
+  populateTripDriverSelect();
+
+  if (tripApiId) {
+    // Fetch trip details
+    fetch(`/api/trips`, { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(trips => {
+        const t = trips.find(x => x.id === tripApiId);
+        if (!t) return;
+        document.getElementById('tripModalTitle').textContent = 'Edit Trip';
+        document.getElementById('tm-save').textContent = 'Save Changes';
+        document.getElementById('tm-id').value = t.id;
+        document.getElementById('tm-cust').value = t.customer_name || '';
+        document.getElementById('tm-phone').value = t.customer_phone || '';
+        document.getElementById('tm-pickup').value = t.pickup || '';
+        document.getElementById('tm-dropoff').value = t.dropoff || '';
+        document.getElementById('tm-time').value = (t.start_time || '').slice(0, 16);
+        document.getElementById('tm-dur').value = t.duration_min || 45;
+        document.getElementById('tm-notes').value = t.notes || '';
+        document.getElementById('tm-driver').value = t.driver_id || '';
+        document.getElementById('tm-delete').style.display = '';
+      });
+  }
+  document.getElementById('tm-cust').focus();
+}
+
+function closeTripModal() {
+  document.getElementById('tripBackdrop').classList.remove('open');
+  document.getElementById('tripModal').classList.remove('open');
+}
+
+async function saveTrip() {
+  const id = document.getElementById('tm-id').value;
+  const customer_name = document.getElementById('tm-cust').value.trim();
+  const customer_phone = document.getElementById('tm-phone').value.trim();
+  const pickup = document.getElementById('tm-pickup').value.trim();
+  const dropoff = document.getElementById('tm-dropoff').value.trim();
+  const start_time = document.getElementById('tm-time').value;
+  const duration_min = parseInt(document.getElementById('tm-dur').value, 10) || 45;
+  const notes = document.getElementById('tm-notes').value.trim();
+  const driver_id = document.getElementById('tm-driver').value || null;
+
+  if (!customer_name || !pickup || !dropoff) { alert('Customer name, pickup, and drop-off are required.'); return; }
+
+  const btn = document.getElementById('tm-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if (id) {
+      await fetch(`/api/trips/${id}`, {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_name, customer_phone, pickup, dropoff, start_time, duration_min, notes, driver_id }),
+      });
+    } else {
+      await fetch('/api/trips', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_name, customer_phone, pickup, dropoff, start_time, duration_min, notes, driver_id }),
+      });
+    }
+    // Refresh schedule data from API
+    await refreshScheduleFromAPI();
+    closeTripModal();
+    showToast(id ? 'Trip updated' : 'Trip added', `${customer_name}: ${pickup} → ${dropoff}`);
+    pushActivity(id ? `Updated trip for ${customer_name}` : `Added trip for ${customer_name}`);
+  } catch(e) { alert('Failed to save trip.'); }
+  btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Add Trip';
+}
+
+async function deleteTrip() {
+  const id = document.getElementById('tm-id').value;
+  const name = document.getElementById('tm-cust').value;
+  if (!id) return;
+  if (!confirm(`Delete trip for "${name}"? This cannot be undone.`)) return;
+  try {
+    await fetch(`/api/trips/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+    await refreshScheduleFromAPI();
+    closeTripModal();
+    showToast('Trip deleted', name);
+    pushActivity(`Deleted trip for ${name}`);
+  } catch(e) { alert('Failed to delete trip.'); }
+}
+
+async function refreshScheduleFromAPI() {
+  try {
+    const dateStr = schedDate.toISOString().slice(0, 10);
+    const r = await fetch(`/api/schedule?date=${dateStr}`, { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const data = await r.json();
+    // Rebuild schedTrips from API data
+    schedTrips.length = 0;
+    data.trips.forEach(t => {
+      const startDt = new Date(t.start_time);
+      const startH = startDt.getHours() + startDt.getMinutes() / 60;
+      const durH = (t.duration_min || 45) / 60;
+      const driverName = t.driver_name || _apiDrivers.find(d => d.id === t.driver_id)?.name || null;
+      if (driverName) {
+        schedTrips.push({
+          id: 'S-' + t.id,
+          apiId: t.id,
+          title: `${t.customer_name} → ${t.dropoff.split(' ')[0]}`,
+          meta: `${t.pickup} → ${t.dropoff}`,
+          driver: driverName,
+          start: startH,
+          dur: durH,
+          state: t.state,
+        });
+      }
+    });
+    // Rebuild unassigned
+    unassigned.length = 0;
+    data.trips.filter(t => !t.driver_id).forEach(t => {
+      const startDt = new Date(t.start_time);
+      const startH = startDt.getHours() + startDt.getMinutes() / 60;
+      unassigned.push({
+        id: 'U-' + t.id,
+        apiId: t.id,
+        title: `${t.customer_name} → ${t.dropoff.split(' ')[0]}`,
+        meta: `${t.pickup} → ${t.dropoff}`,
+        dur: (t.duration_min || 45) / 60,
+        preferredTime: startH,
+      });
+    });
+    renderSchedule();
+    computeNextAvailable();
+  } catch(e) { console.warn('refreshScheduleFromAPI', e); }
+}
 
 function notifyDriver(id) {
   const t = tasks.find(x => x.id === id);
@@ -2113,7 +2547,8 @@ function renderSchedule() {
     const tripsHtml = trips.map(t => {
       const leftPct = ((t.start - SCHED_START) / SCHED_HOURS) * 100;
       const widthPct = (t.dur / SCHED_HOURS) * 100;
-      return `<div class="tl-trip ${t.state}" style="left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;" title="${t.title} — ${fmtTripTime(t)}">
+      const clickEdit = t.apiId ? `onclick="openTripModal(${t.apiId})" style="cursor:pointer; left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;"` : `style="left:${leftPct}%; width:calc(${widthPct}% - 4px); margin-left:2px;"`;
+      return `<div class="tl-trip ${t.state}" ${clickEdit} title="${t.title} — ${fmtTripTime(t)} (click to edit)">
         <div class="tt-title">${t.title}</div>
         <div class="tt-meta">${fmtTripTime(t)} • ${t.meta}</div>
       </div>`;
@@ -2159,7 +2594,10 @@ function renderSchedule() {
   // summary + bench
   document.getElementById('schTotal').textContent = schedTrips.length;
   document.getElementById('schUnassigned').textContent = unassigned.length;
-  const totalDriverHours = schedDrivers.filter(d=>d.avail).length * SCHED_HOURS;
+  const activeCount = schedDrivers.filter(d=>d.avail).length;
+  const totalCount = _apiDrivers ? _apiDrivers.length : schedDrivers.length;
+  document.getElementById('schActiveDrivers').textContent = `${activeCount} / ${totalCount}`;
+  const totalDriverHours = activeCount * SCHED_HOURS;
   const bookedHours = schedTrips.reduce((s,t) => s + t.dur, 0);
   document.getElementById('schCapacity').textContent = Math.round((bookedHours/totalDriverHours)*100) + '%';
 
@@ -2170,11 +2608,14 @@ function renderSchedule() {
   if (unassigned.length === 0) {
     bench.innerHTML = '<div class="bench-empty">✓ Everything is assigned. The AI will flag anything new that needs attention.</div>';
   } else {
-    bench.innerHTML = unassigned.map(u => `
-      <div class="unassigned-trip" title="Needs assignment">
+    bench.innerHTML = unassigned.map(u => {
+      const editClick = u.apiId ? `onclick="openTripModal(${u.apiId})" style="cursor:pointer;"` : '';
+      return `
+      <div class="unassigned-trip" ${editClick} title="Click to edit / assign">
         <div class="ut-title">${u.title}</div>
         <div class="ut-meta">${u.meta} • ${Math.round(u.dur*60)} min • preferred ~${fmtTimeHours(u.preferredTime)}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 }
 
